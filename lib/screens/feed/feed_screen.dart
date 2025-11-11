@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/post_provider.dart';
+import '../../providers/story_provider.dart';
 import '../../widgets/post_card.dart';
+import '../../widgets/story_circle.dart';
+import '../stories/create_story_screen.dart';
+import '../messages/messages_screen.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
@@ -17,6 +22,7 @@ class _FeedScreenState extends State<FeedScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadFeed();
+      _loadStories();
     });
   }
 
@@ -26,6 +32,15 @@ class _FeedScreenState extends State<FeedScreen> {
 
     if (authProvider.user != null) {
       await postProvider.loadFeedPosts(authProvider.user!.uid);
+    }
+  }
+
+  Future<void> _loadStories() async {
+    final authProvider = context.read<AuthProvider>();
+    final storyProvider = context.read<StoryProvider>();
+
+    if (authProvider.user != null) {
+      await storyProvider.loadStories(authProvider.user!.uid);
     }
   }
 
@@ -53,53 +68,191 @@ class _FeedScreenState extends State<FeedScreen> {
           IconButton(
             icon: const Icon(Icons.chat_bubble_outline),
             onPressed: () {
-              // Navigate to messages
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const MessagesScreen(),
+                ),
+              );
             },
           ),
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: _loadFeed,
-        child: Consumer<PostProvider>(
-          builder: (context, postProvider, child) {
-            if (postProvider.isLoading) {
+        onRefresh: () async {
+          await _loadFeed();
+          await _loadStories();
+        },
+        child: Consumer2<PostProvider, StoryProvider>(
+          builder: (context, postProvider, storyProvider, child) {
+            if (postProvider.isLoading && storyProvider.isLoading) {
               return const Center(
                 child: CircularProgressIndicator(),
               );
             }
 
-            if (postProvider.feedPosts.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.photo_library_outlined,
-                      size: 80,
-                      color: Colors.grey,
+            return CustomScrollView(
+              slivers: [
+                // Stories section
+                SliverToBoxAdapter(
+                  child: Container(
+                    height: 100,
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(color: Colors.grey[300]!),
+                      ),
                     ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'No posts yet',
-                      style: Theme.of(context).textTheme.headlineSmall,
+                    child: Consumer2<StoryProvider, AuthProvider>(
+                      builder: (context, storyProvider, authProvider, child) {
+                        final userStories = storyProvider.userStories;
+                        final currentUser = authProvider.userModel;
+
+                        if (currentUser == null) {
+                          return const SizedBox.shrink();
+                        }
+
+                        return ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: userStories.length + 1,
+                          itemBuilder: (context, index) {
+                            // Own story / Create story
+                            if (index == 0) {
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const CreateStoryScreen(),
+                                    ),
+                                  );
+                                },
+                                child: Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 8),
+                                  child: Column(
+                                    children: [
+                                      Stack(
+                                        children: [
+                                          Container(
+                                            width: 72,
+                                            height: 72,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                  color: Colors.grey[300]!,
+                                                  width: 2),
+                                            ),
+                                            child: CircleAvatar(
+                                              radius: 34,
+                                              backgroundImage:
+                                                  currentUser.photoUrl.isNotEmpty
+                                                      ? NetworkImage(
+                                                          currentUser.photoUrl)
+                                                      : null,
+                                              child: currentUser.photoUrl.isEmpty
+                                                  ? const Icon(Icons.person,
+                                                      size: 30)
+                                                  : null,
+                                            ),
+                                          ),
+                                          Positioned(
+                                            bottom: 0,
+                                            right: 0,
+                                            child: Container(
+                                              padding: const EdgeInsets.all(2),
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: Theme.of(context)
+                                                    .scaffoldBackgroundColor,
+                                              ),
+                                              child: Container(
+                                                width: 20,
+                                                height: 20,
+                                                decoration: const BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  color: Colors.blue,
+                                                ),
+                                                child: const Icon(
+                                                  Icons.add,
+                                                  size: 16,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
+                                      const Text(
+                                        'Your story',
+                                        style: TextStyle(fontSize: 12),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }
+
+                            final userStoryData = userStories[index - 1];
+                            final user = userStoryData['user'];
+                            final stories = userStoryData['stories'];
+
+                            return StoryCircle(
+                              user: user,
+                              stories: stories,
+                              isOwnStory: false,
+                              hasNewStory: true,
+                              userIndex: index - 1,
+                              allUserStories: userStories,
+                            );
+                          },
+                        );
+                      },
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Follow people to see their posts',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  ),
+                ),
+
+                // Posts section
+                if (postProvider.feedPosts.isEmpty)
+                  SliverFillRemaining(
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.photo_library_outlined,
+                            size: 80,
                             color: Colors.grey,
                           ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No posts yet',
+                            style: Theme.of(context).textTheme.headlineSmall,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Follow people to see their posts',
+                            style:
+                                Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                      color: Colors.grey,
+                                    ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-              );
-            }
-
-            return ListView.builder(
-              itemCount: postProvider.feedPosts.length,
-              itemBuilder: (context, index) {
-                return PostCard(post: postProvider.feedPosts[index]);
-              },
+                  )
+                else
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        return PostCard(post: postProvider.feedPosts[index]);
+                      },
+                      childCount: postProvider.feedPosts.length,
+                    ),
+                  ),
+              ],
             );
           },
         ),

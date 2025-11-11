@@ -4,6 +4,8 @@ import '../models/user_model.dart';
 import '../models/post_model.dart';
 import '../models/comment_model.dart';
 import '../models/story_model.dart';
+import '../models/message_model.dart';
+import '../models/notification_model.dart';
 import '../core/constants/app_constants.dart';
 
 class DatabaseService {
@@ -500,6 +502,383 @@ class DatabaseService {
       return following;
     } catch (e) {
       return [];
+    }
+  }
+
+  // ============ STORY OPERATIONS ============
+
+  // Create story
+  Future<String> createStory({
+    required String userId,
+    required String username,
+    required String userPhotoUrl,
+    required String mediaUrl,
+    required String mediaType,
+  }) async {
+    try {
+      final storyId = _uuid.v4();
+      final now = DateTime.now();
+      final expiresAt = now.add(Duration(hours: AppConstants.storyDurationHours));
+
+      final story = StoryModel(
+        storyId: storyId,
+        userId: userId,
+        username: username,
+        userPhotoUrl: userPhotoUrl,
+        mediaUrl: mediaUrl,
+        mediaType: mediaType,
+        createdAt: now,
+        expiresAt: expiresAt,
+      );
+
+      await _firestore
+          .collection(AppConstants.storiesCollection)
+          .doc(storyId)
+          .set(story.toMap());
+
+      return storyId;
+    } catch (e) {
+      print('Error creating story: $e');
+      rethrow;
+    }
+  }
+
+  // Get stories from following users
+  Future<List<Map<String, dynamic>>> getStoriesFromFollowing(String userId) async {
+    try {
+      final followingIds = await getFollowingIds(userId);
+      followingIds.add(userId); // Include own stories
+
+      if (followingIds.isEmpty) {
+        return [];
+      }
+
+      final now = DateTime.now();
+
+      // Get stories for each user
+      List<Map<String, dynamic>> userStoriesMap = [];
+
+      for (String followingId in followingIds) {
+        final storiesSnapshot = await _firestore
+            .collection(AppConstants.storiesCollection)
+            .where('userId', isEqualTo: followingId)
+            .where('expiresAt', isGreaterThan: Timestamp.fromDate(now))
+            .orderBy('expiresAt')
+            .orderBy('createdAt', descending: false)
+            .get();
+
+        if (storiesSnapshot.docs.isNotEmpty) {
+          final stories = storiesSnapshot.docs
+              .map((doc) => StoryModel.fromDocument(doc))
+              .toList();
+
+          final user = await getUserById(followingId);
+          if (user != null) {
+            userStoriesMap.add({
+              'user': user,
+              'stories': stories,
+            });
+          }
+        }
+      }
+
+      return userStoriesMap;
+    } catch (e) {
+      print('Error getting stories: $e');
+      return [];
+    }
+  }
+
+  // Get user stories
+  Future<List<StoryModel>> getUserStories(String userId) async {
+    try {
+      final now = DateTime.now();
+
+      final querySnapshot = await _firestore
+          .collection(AppConstants.storiesCollection)
+          .where('userId', isEqualTo: userId)
+          .where('expiresAt', isGreaterThan: Timestamp.fromDate(now))
+          .orderBy('expiresAt')
+          .orderBy('createdAt', descending: false)
+          .get();
+
+      return querySnapshot.docs
+          .map((doc) => StoryModel.fromDocument(doc))
+          .toList();
+    } catch (e) {
+      print('Error getting user stories: $e');
+      return [];
+    }
+  }
+
+  // Add story view
+  Future<void> addStoryView(String storyId, String userId) async {
+    try {
+      await _firestore
+          .collection(AppConstants.storiesCollection)
+          .doc(storyId)
+          .update({
+        'views': FieldValue.arrayUnion([userId]),
+      });
+    } catch (e) {
+      print('Error adding story view: $e');
+      rethrow;
+    }
+  }
+
+  // Delete story
+  Future<void> deleteStory(String storyId) async {
+    try {
+      await _firestore
+          .collection(AppConstants.storiesCollection)
+          .doc(storyId)
+          .delete();
+    } catch (e) {
+      print('Error deleting story: $e');
+      rethrow;
+    }
+  }
+
+  // ============ MESSAGE OPERATIONS ============
+
+  // Create or get conversation
+  Future<String> createOrGetConversation(String user1Id, String user2Id) async {
+    try {
+      // Create consistent conversation ID
+      final participants = [user1Id, user2Id]..sort();
+      final conversationId = '${participants[0]}_${participants[1]}';
+
+      final doc = await _firestore
+          .collection(AppConstants.conversationsCollection)
+          .doc(conversationId)
+          .get();
+
+      if (!doc.exists) {
+        // Create new conversation
+        await _firestore
+            .collection(AppConstants.conversationsCollection)
+            .doc(conversationId)
+            .set({
+          'conversationId': conversationId,
+          'participants': participants,
+          'lastMessage': '',
+          'lastMessageTime': FieldValue.serverTimestamp(),
+          'unreadCount': {user1Id: 0, user2Id: 0},
+        });
+      }
+
+      return conversationId;
+    } catch (e) {
+      print('Error creating conversation: $e');
+      rethrow;
+    }
+  }
+
+  // Send message
+  Future<void> sendMessage({
+    required String conversationId,
+    required String senderId,
+    required String text,
+    required String type,
+    String? mediaUrl,
+  }) async {
+    try {
+      final messageId = _uuid.v4();
+
+      final message = MessageModel(
+        messageId: messageId,
+        conversationId: conversationId,
+        senderId: senderId,
+        text: text,
+        mediaUrl: mediaUrl,
+        type: type,
+        createdAt: DateTime.now(),
+      );
+
+      // Add message
+      await _firestore
+          .collection(AppConstants.conversationsCollection)
+          .doc(conversationId)
+          .collection(AppConstants.messagesCollection)
+          .doc(messageId)
+          .set(message.toMap());
+
+      // Update conversation
+      final conversationDoc = await _firestore
+          .collection(AppConstants.conversationsCollection)
+          .doc(conversationId)
+          .get();
+
+      final conversationData = conversationDoc.data()!;
+      final participants = List<String>.from(conversationData['participants']);
+      final otherUserId = participants.firstWhere((id) => id != senderId);
+
+      await _firestore
+          .collection(AppConstants.conversationsCollection)
+          .doc(conversationId)
+          .update({
+        'lastMessage': type == 'text' ? text : '📷 Photo',
+        'lastMessageTime': FieldValue.serverTimestamp(),
+        'unreadCount.$otherUserId': FieldValue.increment(1),
+      });
+    } catch (e) {
+      print('Error sending message: $e');
+      rethrow;
+    }
+  }
+
+  // Get messages stream
+  Stream<List<MessageModel>> getMessagesStream(String conversationId) {
+    return _firestore
+        .collection(AppConstants.conversationsCollection)
+        .doc(conversationId)
+        .collection(AppConstants.messagesCollection)
+        .orderBy('createdAt', descending: true)
+        .limit(50)
+        .snapshots()
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => MessageModel.fromDocument(doc)).toList());
+  }
+
+  // Get user conversations
+  Future<List<ConversationModel>> getUserConversations(String userId) async {
+    try {
+      final querySnapshot = await _firestore
+          .collection(AppConstants.conversationsCollection)
+          .where('participants', arrayContains: userId)
+          .orderBy('lastMessageTime', descending: true)
+          .get();
+
+      return querySnapshot.docs
+          .map((doc) => ConversationModel.fromDocument(doc))
+          .toList();
+    } catch (e) {
+      print('Error getting conversations: $e');
+      return [];
+    }
+  }
+
+  // Mark messages as read
+  Future<void> markMessagesAsRead(String conversationId, String userId) async {
+    try {
+      await _firestore
+          .collection(AppConstants.conversationsCollection)
+          .doc(conversationId)
+          .update({
+        'unreadCount.$userId': 0,
+      });
+    } catch (e) {
+      print('Error marking messages as read: $e');
+      rethrow;
+    }
+  }
+
+  // ============ NOTIFICATION OPERATIONS ============
+
+  // Create notification
+  Future<void> createNotification({
+    required String userId,
+    required String fromUserId,
+    required String fromUsername,
+    required String fromUserPhotoUrl,
+    required String type,
+    required String text,
+    String? postId,
+    String? postImageUrl,
+  }) async {
+    try {
+      // Don't create notification for own actions
+      if (userId == fromUserId) return;
+
+      final notificationId = _uuid.v4();
+
+      final notification = NotificationModel(
+        notificationId: notificationId,
+        userId: userId,
+        fromUserId: fromUserId,
+        fromUsername: fromUsername,
+        fromUserPhotoUrl: fromUserPhotoUrl,
+        type: type,
+        postId: postId,
+        postImageUrl: postImageUrl,
+        text: text,
+        createdAt: DateTime.now(),
+      );
+
+      await _firestore
+          .collection(AppConstants.notificationsCollection)
+          .doc(notificationId)
+          .set(notification.toMap());
+    } catch (e) {
+      print('Error creating notification: $e');
+      rethrow;
+    }
+  }
+
+  // Get user notifications
+  Future<List<NotificationModel>> getUserNotifications(String userId) async {
+    try {
+      final querySnapshot = await _firestore
+          .collection(AppConstants.notificationsCollection)
+          .where('userId', isEqualTo: userId)
+          .orderBy('createdAt', descending: true)
+          .limit(50)
+          .get();
+
+      return querySnapshot.docs
+          .map((doc) => NotificationModel.fromDocument(doc))
+          .toList();
+    } catch (e) {
+      print('Error getting notifications: $e');
+      return [];
+    }
+  }
+
+  // Get notifications stream
+  Stream<List<NotificationModel>> getNotificationsStream(String userId) {
+    return _firestore
+        .collection(AppConstants.notificationsCollection)
+        .where('userId', isEqualTo: userId)
+        .orderBy('createdAt', descending: true)
+        .limit(50)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => NotificationModel.fromDocument(doc))
+            .toList());
+  }
+
+  // Mark notification as read
+  Future<void> markNotificationAsRead(String notificationId) async {
+    try {
+      await _firestore
+          .collection(AppConstants.notificationsCollection)
+          .doc(notificationId)
+          .update({'isRead': true});
+    } catch (e) {
+      print('Error marking notification as read: $e');
+      rethrow;
+    }
+  }
+
+  // Mark all notifications as read
+  Future<void> markAllNotificationsAsRead(String userId) async {
+    try {
+      final querySnapshot = await _firestore
+          .collection(AppConstants.notificationsCollection)
+          .where('userId', isEqualTo: userId)
+          .where('isRead', isEqualTo: false)
+          .get();
+
+      final batch = _firestore.batch();
+
+      for (var doc in querySnapshot.docs) {
+        batch.update(doc.reference, {'isRead': true});
+      }
+
+      await batch.commit();
+    } catch (e) {
+      print('Error marking all notifications as read: $e');
+      rethrow;
     }
   }
 }

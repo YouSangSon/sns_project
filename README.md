@@ -1,6 +1,12 @@
 # SNS App - Instagram-Style Social Media Application
 
-Flutter로 구현한 크로스 플랫폼 소셜 네트워크 서비스 애플리케이션입니다.
+Flutter로 구현한 **크로스 플랫폼** 소셜 네트워크 서비스 애플리케이션입니다.
+
+## 🌐 지원 플랫폼
+- ✅ **웹** (Chrome, Safari, Edge, Firefox)
+- ✅ **Android** (API 21+)
+- ✅ **iOS** (iOS 12.0+)
+- ✅ **반응형 디자인** (모바일, 태블릿, 데스크톱)
 
 ## 📱 주요 기능
 
@@ -75,26 +81,27 @@ Flutter로 구현한 크로스 플랫폼 소셜 네트워크 서비스 애플리
 ## 🛠 기술 스택
 
 ### Frontend
-- **Flutter** 3.x
-- **Dart**
-- **Provider** - 상태 관리
-- **GoRouter** - 라우팅
+- **Flutter** 3.x - 크로스 플랫폼 프레임워크
+- **Dart** - 프로그래밍 언어
+- **Riverpod** 2.4+ - 현대적인 상태 관리 (Provider에서 마이그레이션)
+- **GoRouter** - 선언적 라우팅
 
-### Backend
-- **Firebase Authentication** - 인증
-- **Cloud Firestore** - 데이터베이스
-- **Firebase Storage** - 파일 저장
-- **Google Sign-In** - 소셜 로그인
+### Backend (하이브리드 지원)
+- **Firebase**
+  - Authentication - 사용자 인증
+  - Cloud Firestore - NoSQL 데이터베이스
+  - Storage - 파일 저장소
+- **Supabase** (선택사항)
+  - PostgreSQL - 관계형 데이터베이스
+  - Real-time subscriptions - 실시간 업데이트
+  - Row Level Security - 보안
 
 ### 주요 패키지
 ```yaml
 dependencies:
-  # UI
-  cached_network_image: ^3.3.0
-  google_fonts: ^6.1.0
-
   # State Management
-  provider: ^6.1.1
+  flutter_riverpod: ^2.4.9
+  riverpod_annotation: ^2.3.3
 
   # Firebase
   firebase_core: ^2.24.2
@@ -102,8 +109,17 @@ dependencies:
   cloud_firestore: ^4.13.6
   firebase_storage: ^11.5.6
 
+  # Supabase (Optional)
+  supabase_flutter: ^2.3.4
+  postgrest: ^2.1.1
+
+  # UI
+  cached_network_image: ^3.3.0
+  google_fonts: ^6.1.0
+
   # Image & Video
   image_picker: ^1.0.5
+  video_player: ^2.8.1
 
   # Routing
   go_router: ^12.1.3
@@ -114,54 +130,76 @@ dependencies:
   uuid: ^4.2.1
 ```
 
+### 아키텍처 특징
+- ✅ **Riverpod 상태 관리**: 타입 안전성과 테스트 용이성
+- ✅ **하이브리드 DB**: Firebase와 Supabase 동시 지원
+- ✅ **플랫폼 감지**: 웹/모바일 자동 감지 및 최적화
+- ✅ **실시간 동기화**: Firestore와 Supabase real-time
+- ✅ **오프라인 지원**: Firestore 캐싱
+
 ## 📁 프로젝트 구조
 
 ```
 lib/
-├── main.dart                   # 앱 진입점
-├── app.dart                    # 앱 루트 및 라우팅
+├── main.dart                            # 앱 진입점
+├── app.dart                             # 앱 루트 및 라우팅
 ├── core/
+│   ├── config/
+│   │   └── supabase_config.dart         # Supabase 설정
 │   ├── constants/
-│   │   └── app_constants.dart  # 앱 상수
+│   │   └── app_constants.dart           # 앱 상수
 │   ├── theme/
-│   │   └── app_theme.dart      # 테마 설정
+│   │   └── app_theme.dart               # 테마 설정
 │   ├── utils/
 │   └── widgets/
 ├── models/
-│   ├── user_model.dart         # 사용자 모델
-│   ├── post_model.dart         # 게시물 모델
-│   ├── comment_model.dart      # 댓글 모델
-│   ├── story_model.dart        # 스토리 모델
-│   └── message_model.dart      # 메시지 모델
-├── providers/
-│   ├── auth_provider.dart      # 인증 상태 관리
-│   ├── user_provider.dart      # 사용자 상태 관리
-│   ├── post_provider.dart      # 게시물 상태 관리
-│   └── theme_provider.dart     # 테마 상태 관리
+│   ├── user_model.dart                  # 사용자 모델
+│   ├── post_model.dart                  # 게시물 모델
+│   ├── comment_model.dart               # 댓글 모델
+│   ├── story_model.dart                 # 스토리 모델
+│   ├── message_model.dart               # 메시지 모델
+│   └── notification_model.dart          # 알림 모델
+├── providers/                           # Riverpod Providers
+│   ├── auth_provider_riverpod.dart      # 인증 상태 관리
+│   ├── user_provider_riverpod.dart      # 사용자 상태 관리
+│   ├── post_provider_riverpod.dart      # 게시물 상태 관리
+│   ├── theme_provider_riverpod.dart     # 테마 상태 관리
+│   ├── story_provider_riverpod.dart     # 스토리 상태 관리
+│   ├── message_provider_riverpod.dart   # 메시지 상태 관리
+│   └── notification_provider_riverpod.dart  # 알림 상태 관리
 ├── services/
-│   ├── auth_service.dart       # 인증 서비스
-│   ├── database_service.dart   # 데이터베이스 서비스
-│   └── storage_service.dart    # 스토리지 서비스
+│   ├── auth_service.dart                # Firebase 인증 서비스
+│   ├── database_service.dart            # Firebase 데이터베이스 서비스
+│   ├── storage_service.dart             # Firebase 스토리지 서비스
+│   ├── supabase_service.dart            # Supabase 서비스
+│   └── hybrid_database_service.dart     # 하이브리드 DB 서비스
 ├── screens/
 │   ├── auth/
-│   │   ├── login_screen.dart   # 로그인 화면
-│   │   └── signup_screen.dart  # 회원가입 화면
+│   │   ├── login_screen.dart            # 로그인 화면
+│   │   └── signup_screen.dart           # 회원가입 화면
 │   ├── home/
-│   │   └── home_screen.dart    # 홈 (메인 네비게이션)
+│   │   └── home_screen.dart             # 홈 (메인 네비게이션)
 │   ├── feed/
-│   │   └── feed_screen.dart    # 피드 화면
+│   │   └── feed_screen.dart             # 피드 화면
 │   ├── post/
-│   │   ├── create_post_screen.dart  # 게시물 작성
-│   │   └── post_detail_screen.dart  # 게시물 상세
+│   │   ├── create_post_screen.dart      # 게시물 작성
+│   │   └── post_detail_screen.dart      # 게시물 상세
 │   ├── profile/
-│   │   ├── profile_screen.dart      # 프로필 화면
-│   │   └── edit_profile_screen.dart # 프로필 편집
+│   │   ├── profile_screen.dart          # 프로필 화면
+│   │   └── edit_profile_screen.dart     # 프로필 편집
 │   ├── search/
-│   │   └── search_screen.dart       # 검색 화면
+│   │   └── search_screen.dart           # 검색 화면
+│   ├── stories/
+│   │   ├── create_story_screen.dart     # 스토리 생성
+│   │   └── stories_screen.dart          # 스토리 뷰어
+│   ├── messages/
+│   │   ├── messages_screen.dart         # 대화 목록
+│   │   └── chat_screen.dart             # 채팅 화면
 │   └── notifications/
-│       └── notifications_screen.dart # 알림 화면
+│       └── notifications_screen.dart    # 알림 화면
 └── widgets/
-    └── post_card.dart          # 게시물 카드 위젯
+    ├── post_card.dart                   # 게시물 카드 위젯
+    └── story_circle.dart                # 스토리 서클 위젯
 ```
 
 ## 🚀 시작하기
@@ -169,8 +207,9 @@ lib/
 ### 사전 준비
 - Flutter SDK 3.0 이상
 - Dart SDK 3.0 이상
-- Android Studio / Xcode
-- Firebase 계정
+- Android Studio / Xcode (모바일 개발 시)
+- Firebase 계정 (필수)
+- Supabase 계정 (선택사항)
 
 ### 1. 저장소 클론
 
@@ -185,25 +224,52 @@ cd sns_project
 flutter pub get
 ```
 
-### 3. Firebase 설정
+### 3. Firebase 설정 (필수)
 
 **중요:** Firebase 설정이 필수입니다. 자세한 내용은 [FIREBASE_SETUP.md](FIREBASE_SETUP.md)를 참조하세요.
 
 간단 요약:
 1. [Firebase Console](https://console.firebase.google.com/)에서 프로젝트 생성
-2. Android 앱 추가 및 `google-services.json` 다운로드 → `android/app/` 에 배치
-3. iOS 앱 추가 및 `GoogleService-Info.plist` 다운로드 → `ios/Runner/` 에 배치
-4. Authentication, Firestore, Storage 활성화
+2. 웹 앱 추가 (웹 지원용)
+3. Android 앱 추가 및 `google-services.json` 다운로드 → `android/app/` 에 배치
+4. iOS 앱 추가 및 `GoogleService-Info.plist` 다운로드 → `ios/Runner/` 에 배치
+5. Authentication, Firestore, Storage 활성화
 
-### 4. 앱 실행
+### 4. Supabase 설정 (선택사항)
 
+Supabase를 사용하려면 [SUPABASE_SETUP.md](SUPABASE_SETUP.md)를 참조하세요.
+
+PostgreSQL의 강력한 쿼리와 관계형 데이터베이스를 원한다면 Supabase를 추가하세요!
+
+### 5. 앱 실행
+
+#### 웹에서 실행
+```bash
+flutter run -d chrome
+# 또는
+flutter run -d edge
+```
+
+#### 모바일에서 실행
 ```bash
 # Android
-flutter run
+flutter run -d android
 
-# iOS
+# iOS (macOS only)
 cd ios && pod install && cd ..
-flutter run
+flutter run -d ios
+```
+
+#### 빌드
+```bash
+# 웹 빌드
+flutter build web --release
+
+# Android APK
+flutter build apk --release
+
+# iOS (macOS only)
+flutter build ios --release
 ```
 
 ## 🗄 데이터베이스 구조
@@ -292,21 +358,28 @@ dart format .
 ### main.dart
 - 앱 진입점
 - Firebase 초기화
-- Provider 설정
+- Supabase 초기화 (선택사항)
+- ProviderScope 설정
+- 플랫폼 감지 (웹/모바일)
 
 ### app.dart
 - 라우팅 설정 (GoRouter)
-- 테마 설정
+- 테마 설정 (라이트/다크 모드)
 - 인증 상태에 따른 리다이렉션
 
 ### services/
 - **auth_service.dart**: Firebase Authentication 래퍼
 - **database_service.dart**: Firestore CRUD 작업
 - **storage_service.dart**: Firebase Storage 이미지 업로드
+- **supabase_service.dart**: Supabase PostgreSQL 작업
+- **hybrid_database_service.dart**: Firebase + Supabase 하이브리드
 
 ### providers/
-- Provider 패턴을 사용한 상태 관리
-- ChangeNotifier를 상속하여 UI 업데이트
+- **Riverpod** 패턴을 사용한 상태 관리
+- **StateNotifier**: 변경 가능한 상태 관리
+- **FutureProvider**: 비동기 데이터 로딩
+- **StreamProvider**: 실시간 데이터 스트림
+- **Provider.family**: 매개변수화된 provider
 
 ## 🔐 보안
 

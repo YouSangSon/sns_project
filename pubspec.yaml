@@ -28,6 +28,10 @@ dependencies:
   firebase_storage: ^11.5.6
   firebase_messaging: ^14.7.9
 
+  # Supabase
+  supabase_flutter: ^2.3.4
+  postgrest: ^2.1.1
+
   # Image & Video
   image_picker: ^1.0.5
   video_player: ^2.8.1

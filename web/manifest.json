@@ -1,0 +1,25 @@
+{
+    "name": "SNS App",
+    "short_name": "SNS",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#FFFFFF",
+    "theme_color": "#405DE6",
+    "description": "Instagram-style SNS application",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "icons/Icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable any"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable any"
+        }
+    ]
+}

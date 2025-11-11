@@ -6,6 +6,9 @@ import '../models/comment_model.dart';
 import '../models/story_model.dart';
 import '../models/message_model.dart';
 import '../models/notification_model.dart';
+import '../models/reel_model.dart';
+import '../models/live_stream_model.dart';
+import '../models/product_model.dart';
 import '../core/constants/app_constants.dart';
 
 class DatabaseService {
@@ -878,6 +881,499 @@ class DatabaseService {
       await batch.commit();
     } catch (e) {
       print('Error marking all notifications as read: $e');
+      rethrow;
+    }
+  }
+
+  // ============ REELS OPERATIONS ============
+
+  // Create reel
+  Future<String> createReel({
+    required String userId,
+    required String username,
+    required String userPhotoUrl,
+    required String videoUrl,
+    required String thumbnailUrl,
+    required String caption,
+    String? audioUrl,
+    String? audioName,
+    required double duration,
+  }) async {
+    try {
+      final reelId = _uuid.v4();
+      final hashtags = ReelModel.extractHashtags(caption);
+
+      final reel = ReelModel(
+        reelId: reelId,
+        userId: userId,
+        username: username,
+        userPhotoUrl: userPhotoUrl,
+        videoUrl: videoUrl,
+        thumbnailUrl: thumbnailUrl,
+        caption: caption,
+        audioUrl: audioUrl,
+        audioName: audioName,
+        hashtags: hashtags,
+        duration: duration,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      await _firestore.collection('reels').doc(reelId).set(reel.toMap());
+
+      // Update user's reels count
+      await _firestore.collection(AppConstants.usersCollection).doc(userId).update({
+        'reelsCount': FieldValue.increment(1),
+      });
+
+      return reelId;
+    } catch (e) {
+      print('Error creating reel: $e');
+      rethrow;
+    }
+  }
+
+  // Get reel by ID
+  Future<ReelModel?> getReelById(String reelId) async {
+    try {
+      final doc = await _firestore.collection('reels').doc(reelId).get();
+      if (doc.exists) {
+        return ReelModel.fromDocument(doc);
+      }
+      return null;
+    } catch (e) {
+      print('Error getting reel: $e');
+      rethrow;
+    }
+  }
+
+  // Get reels feed (all reels, sorted by newest)
+  Stream<List<ReelModel>> getReelsFeed({int limit = 20}) {
+    return _firestore
+        .collection('reels')
+        .orderBy('createdAt', descending: true)
+        .limit(limit)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => ReelModel.fromDocument(doc)).toList());
+  }
+
+  // Get user's reels
+  Stream<List<ReelModel>> getUserReels(String userId) {
+    return _firestore
+        .collection('reels')
+        .where('userId', isEqualTo: userId)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => ReelModel.fromDocument(doc)).toList());
+  }
+
+  // Like reel
+  Future<void> likeReel(String reelId, String userId) async {
+    try {
+      final likeId = '${userId}_$reelId';
+      await _firestore.collection('reel_likes').doc(likeId).set({
+        'reelId': reelId,
+        'userId': userId,
+        'createdAt': Timestamp.now(),
+      });
+
+      await _firestore.collection('reels').doc(reelId).update({
+        'likes': FieldValue.increment(1),
+      });
+    } catch (e) {
+      print('Error liking reel: $e');
+      rethrow;
+    }
+  }
+
+  // Unlike reel
+  Future<void> unlikeReel(String reelId, String userId) async {
+    try {
+      final likeId = '${userId}_$reelId';
+      await _firestore.collection('reel_likes').doc(likeId).delete();
+
+      await _firestore.collection('reels').doc(reelId).update({
+        'likes': FieldValue.increment(-1),
+      });
+    } catch (e) {
+      print('Error unliking reel: $e');
+      rethrow;
+    }
+  }
+
+  // Check if user liked reel
+  Future<bool> hasLikedReel(String reelId, String userId) async {
+    try {
+      final likeId = '${userId}_$reelId';
+      final doc = await _firestore.collection('reel_likes').doc(likeId).get();
+      return doc.exists;
+    } catch (e) {
+      print('Error checking reel like: $e');
+      return false;
+    }
+  }
+
+  // Increment reel views
+  Future<void> incrementReelViews(String reelId) async {
+    try {
+      await _firestore.collection('reels').doc(reelId).update({
+        'views': FieldValue.increment(1),
+      });
+    } catch (e) {
+      print('Error incrementing reel views: $e');
+      rethrow;
+    }
+  }
+
+  // Delete reel
+  Future<void> deleteReel(String reelId, String userId) async {
+    try {
+      await _firestore.collection('reels').doc(reelId).delete();
+
+      // Delete all likes for this reel
+      final likesQuery = await _firestore
+          .collection('reel_likes')
+          .where('reelId', isEqualTo: reelId)
+          .get();
+
+      final batch = _firestore.batch();
+      for (var doc in likesQuery.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+
+      // Update user's reels count
+      await _firestore.collection(AppConstants.usersCollection).doc(userId).update({
+        'reelsCount': FieldValue.increment(-1),
+      });
+    } catch (e) {
+      print('Error deleting reel: $e');
+      rethrow;
+    }
+  }
+
+  // ============ LIVE STREAMING OPERATIONS ============
+
+  // Create live stream
+  Future<String> createLiveStream({
+    required String userId,
+    required String username,
+    required String userPhotoUrl,
+    required String title,
+    String description = '',
+    String? thumbnailUrl,
+    DateTime? scheduledAt,
+  }) async {
+    try {
+      final streamId = _uuid.v4();
+
+      final liveStream = LiveStreamModel(
+        streamId: streamId,
+        userId: userId,
+        username: username,
+        userPhotoUrl: userPhotoUrl,
+        title: title,
+        description: description,
+        thumbnailUrl: thumbnailUrl ?? '',
+        status: scheduledAt != null ? LiveStreamStatus.scheduled : LiveStreamStatus.live,
+        scheduledAt: scheduledAt,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      await _firestore.collection('live_streams').doc(streamId).set(liveStream.toMap());
+
+      return streamId;
+    } catch (e) {
+      print('Error creating live stream: $e');
+      rethrow;
+    }
+  }
+
+  // Get live stream by ID
+  Future<LiveStreamModel?> getLiveStreamById(String streamId) async {
+    try {
+      final doc = await _firestore.collection('live_streams').doc(streamId).get();
+      if (doc.exists) {
+        return LiveStreamModel.fromDocument(doc);
+      }
+      return null;
+    } catch (e) {
+      print('Error getting live stream: $e');
+      rethrow;
+    }
+  }
+
+  // Get active live streams
+  Stream<List<LiveStreamModel>> getActiveLiveStreams() {
+    return _firestore
+        .collection('live_streams')
+        .where('status', isEqualTo: 'live')
+        .orderBy('startedAt', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => LiveStreamModel.fromDocument(doc)).toList());
+  }
+
+  // Get user's live streams
+  Stream<List<LiveStreamModel>> getUserLiveStreams(String userId) {
+    return _firestore
+        .collection('live_streams')
+        .where('userId', isEqualTo: userId)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => LiveStreamModel.fromDocument(doc)).toList());
+  }
+
+  // Start live stream
+  Future<void> startLiveStream(String streamId, String agoraChannelName, String agoraToken) async {
+    try {
+      await _firestore.collection('live_streams').doc(streamId).update({
+        'status': 'live',
+        'agoraChannelName': agoraChannelName,
+        'agoraToken': agoraToken,
+        'startedAt': Timestamp.now(),
+        'updatedAt': Timestamp.now(),
+      });
+    } catch (e) {
+      print('Error starting live stream: $e');
+      rethrow;
+    }
+  }
+
+  // End live stream
+  Future<void> endLiveStream(String streamId) async {
+    try {
+      await _firestore.collection('live_streams').doc(streamId).update({
+        'status': 'ended',
+        'endedAt': Timestamp.now(),
+        'updatedAt': Timestamp.now(),
+      });
+    } catch (e) {
+      print('Error ending live stream: $e');
+      rethrow;
+    }
+  }
+
+  // Update live stream viewer count
+  Future<void> updateLiveStreamViewers(String streamId, int viewerCount) async {
+    try {
+      final doc = await _firestore.collection('live_streams').doc(streamId).get();
+      final currentPeak = doc.data()?['peakViewerCount'] ?? 0;
+
+      await _firestore.collection('live_streams').doc(streamId).update({
+        'viewerCount': viewerCount,
+        'peakViewerCount': viewerCount > currentPeak ? viewerCount : currentPeak,
+        'updatedAt': Timestamp.now(),
+      });
+    } catch (e) {
+      print('Error updating live stream viewers: $e');
+      rethrow;
+    }
+  }
+
+  // Like live stream
+  Future<void> likeLiveStream(String streamId) async {
+    try {
+      await _firestore.collection('live_streams').doc(streamId).update({
+        'likes': FieldValue.increment(1),
+      });
+    } catch (e) {
+      print('Error liking live stream: $e');
+      rethrow;
+    }
+  }
+
+  // Delete live stream
+  Future<void> deleteLiveStream(String streamId) async {
+    try {
+      await _firestore.collection('live_streams').doc(streamId).delete();
+    } catch (e) {
+      print('Error deleting live stream: $e');
+      rethrow;
+    }
+  }
+
+  // ============ SHOPPING/PRODUCT OPERATIONS ============
+
+  // Create product
+  Future<String> createProduct({
+    required String sellerId,
+    required String sellerName,
+    required String sellerPhotoUrl,
+    required String name,
+    required String description,
+    required List<String> imageUrls,
+    required double price,
+    double? originalPrice,
+    required ProductCategory category,
+    required int stockQuantity,
+    List<String> tags = const [],
+  }) async {
+    try {
+      final productId = _uuid.v4();
+
+      final product = ProductModel(
+        productId: productId,
+        sellerId: sellerId,
+        sellerName: sellerName,
+        sellerPhotoUrl: sellerPhotoUrl,
+        name: name,
+        description: description,
+        imageUrls: imageUrls,
+        price: price,
+        originalPrice: originalPrice,
+        category: category,
+        stockQuantity: stockQuantity,
+        tags: tags,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      await _firestore.collection('products').doc(productId).set(product.toMap());
+
+      return productId;
+    } catch (e) {
+      print('Error creating product: $e');
+      rethrow;
+    }
+  }
+
+  // Get product by ID
+  Future<ProductModel?> getProductById(String productId) async {
+    try {
+      final doc = await _firestore.collection('products').doc(productId).get();
+      if (doc.exists) {
+        return ProductModel.fromDocument(doc);
+      }
+      return null;
+    } catch (e) {
+      print('Error getting product: $e');
+      rethrow;
+    }
+  }
+
+  // Get all products
+  Stream<List<ProductModel>> getAllProducts({int limit = 20}) {
+    return _firestore
+        .collection('products')
+        .where('status', isEqualTo: 'available')
+        .orderBy('createdAt', descending: true)
+        .limit(limit)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => ProductModel.fromDocument(doc)).toList());
+  }
+
+  // Get products by category
+  Stream<List<ProductModel>> getProductsByCategory(ProductCategory category, {int limit = 20}) {
+    return _firestore
+        .collection('products')
+        .where('category', isEqualTo: category.toString().split('.').last)
+        .where('status', isEqualTo: 'available')
+        .orderBy('createdAt', descending: true)
+        .limit(limit)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => ProductModel.fromDocument(doc)).toList());
+  }
+
+  // Get seller's products
+  Stream<List<ProductModel>> getSellerProducts(String sellerId) {
+    return _firestore
+        .collection('products')
+        .where('sellerId', isEqualTo: sellerId)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => ProductModel.fromDocument(doc)).toList());
+  }
+
+  // Update product
+  Future<void> updateProduct(String productId, Map<String, dynamic> updates) async {
+    try {
+      updates['updatedAt'] = Timestamp.now();
+      await _firestore.collection('products').doc(productId).update(updates);
+    } catch (e) {
+      print('Error updating product: $e');
+      rethrow;
+    }
+  }
+
+  // Delete product
+  Future<void> deleteProduct(String productId) async {
+    try {
+      await _firestore.collection('products').doc(productId).delete();
+    } catch (e) {
+      print('Error deleting product: $e');
+      rethrow;
+    }
+  }
+
+  // Create order
+  Future<String> createOrder({
+    required String userId,
+    required List<CartItem> items,
+    required String shippingAddress,
+    required String paymentMethod,
+  }) async {
+    try {
+      final orderId = _uuid.v4();
+
+      final subtotal = items.fold<double>(0, (sum, item) => sum + item.totalPrice);
+      final tax = subtotal * 0.1; // 10% tax
+      final shipping = 5.0; // Flat shipping fee
+      final total = subtotal + tax + shipping;
+
+      final order = Order(
+        orderId: orderId,
+        userId: userId,
+        items: items,
+        subtotal: subtotal,
+        tax: tax,
+        shipping: shipping,
+        total: total,
+        shippingAddress: shippingAddress,
+        paymentMethod: paymentMethod,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      await _firestore.collection('orders').doc(orderId).set(order.toMap());
+
+      // Update product stock quantities
+      final batch = _firestore.batch();
+      for (var item in items) {
+        final productRef = _firestore.collection('products').doc(item.product.productId);
+        batch.update(productRef, {
+          'stockQuantity': FieldValue.increment(-item.quantity),
+          'soldCount': FieldValue.increment(item.quantity),
+        });
+      }
+      await batch.commit();
+
+      return orderId;
+    } catch (e) {
+      print('Error creating order: $e');
+      rethrow;
+    }
+  }
+
+  // Get user's orders
+  Stream<List<Order>> getUserOrders(String userId) {
+    return _firestore
+        .collection('orders')
+        .where('userId', isEqualTo: userId)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => Order.fromMap(doc.data())).toList());
+  }
+
+  // Update order status
+  Future<void> updateOrderStatus(String orderId, String status) async {
+    try {
+      await _firestore.collection('orders').doc(orderId).update({
+        'status': status,
+        'updatedAt': Timestamp.now(),
+      });
+    } catch (e) {
+      print('Error updating order status: $e');
       rethrow;
     }
   }

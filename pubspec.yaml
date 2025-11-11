@@ -80,9 +80,13 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  integration_test:
+    sdk: flutter
   flutter_lints: ^3.0.0
   build_runner: ^2.4.6
   riverpod_generator: ^2.3.9
+  mockito: ^5.4.4
+  test: ^1.24.9
 
 flutter:
   uses-material-design: true

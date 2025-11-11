@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../providers/auth_provider.dart';
+import '../../providers/auth_provider_riverpod.dart';
 import '../../core/theme/app_theme.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -26,18 +26,20 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _handleLogin() async {
     if (_formKey.currentState!.validate()) {
-      final authProvider = context.read<AuthProvider>();
-      final success = await authProvider.signIn(
+      final authNotifier = ref.read(authNotifierProvider.notifier);
+      final result = await authNotifier.signIn(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
 
-      if (success && mounted) {
+      if (result != null && mounted) {
         context.go('/home');
       } else if (mounted) {
+        final authState = ref.read(authNotifierProvider);
+        final errorMessage = authState.error?.toString() ?? 'Login failed';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(authProvider.errorMessage ?? 'Login failed'),
+            content: Text(errorMessage),
             backgroundColor: Colors.red,
           ),
         );
@@ -46,15 +48,17 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleGoogleSignIn() async {
-    final authProvider = context.read<AuthProvider>();
-    final success = await authProvider.signInWithGoogle();
+    final authNotifier = ref.read(authNotifierProvider.notifier);
+    final result = await authNotifier.signInWithGoogle();
 
-    if (success && mounted) {
+    if (result != null && mounted) {
       context.go('/home');
     } else if (mounted) {
+      final authState = ref.read(authNotifierProvider);
+      final errorMessage = authState.error?.toString() ?? 'Google sign in failed';
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(authProvider.errorMessage ?? 'Google sign in failed'),
+          content: Text(errorMessage),
           backgroundColor: Colors.red,
         ),
       );
@@ -150,9 +154,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 24),
 
                   // Login button
-                  Consumer<AuthProvider>(
-                    builder: (context, authProvider, child) {
-                      if (authProvider.isLoading) {
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final authState = ref.watch(authNotifierProvider);
+
+                      if (authState.isLoading) {
                         return const Center(
                           child: CircularProgressIndicator(),
                         );

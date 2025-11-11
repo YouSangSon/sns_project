@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../providers/auth_provider.dart';
+import '../../providers/auth_provider_riverpod.dart';
 import '../../core/theme/app_theme.dart';
 
-class SignupScreen extends StatefulWidget {
+class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
 
   @override
-  State<SignupScreen> createState() => _SignupScreenState();
+  ConsumerState<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _SignupScreenState extends State<SignupScreen> {
+class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _usernameController = TextEditingController();
@@ -33,20 +33,22 @@ class _SignupScreenState extends State<SignupScreen> {
 
   Future<void> _handleSignup() async {
     if (_formKey.currentState!.validate()) {
-      final authProvider = context.read<AuthProvider>();
-      final success = await authProvider.signUp(
+      final authNotifier = ref.read(authNotifierProvider.notifier);
+      final result = await authNotifier.signUp(
         email: _emailController.text.trim(),
         password: _passwordController.text,
         username: _usernameController.text.trim(),
         displayName: _displayNameController.text.trim(),
       );
 
-      if (success && mounted) {
+      if (result != null && mounted) {
         context.go('/home');
       } else if (mounted) {
+        final authState = ref.read(authNotifierProvider);
+        final errorMessage = authState.error?.toString() ?? 'Signup failed';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(authProvider.errorMessage ?? 'Signup failed'),
+            content: Text(errorMessage),
             backgroundColor: Colors.red,
           ),
         );
@@ -226,9 +228,11 @@ class _SignupScreenState extends State<SignupScreen> {
                   const SizedBox(height: 24),
 
                   // Signup button
-                  Consumer<AuthProvider>(
-                    builder: (context, authProvider, child) {
-                      if (authProvider.isLoading) {
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final authState = ref.watch(authNotifierProvider);
+
+                      if (authState.isLoading) {
                         return const Center(
                           child: CircularProgressIndicator(),
                         );

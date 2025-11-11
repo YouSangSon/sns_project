@@ -1,68 +1,45 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../models/post_model.dart';
-import '../providers/auth_provider.dart';
-import '../providers/post_provider.dart';
+import '../providers/auth_provider_riverpod.dart';
+import '../providers/post_provider_riverpod.dart';
 
-class PostCard extends StatefulWidget {
+class PostCard extends ConsumerStatefulWidget {
   final PostModel post;
 
   const PostCard({super.key, required this.post});
 
   @override
-  State<PostCard> createState() => _PostCardState();
+  ConsumerState<PostCard> createState() => _PostCardState();
 }
 
-class _PostCardState extends State<PostCard> {
-  bool _isLiked = false;
+class _PostCardState extends ConsumerState<PostCard> {
   int _currentImageIndex = 0;
 
-  @override
-  void initState() {
-    super.initState();
-    _checkIfLiked();
-  }
+  Future<void> _toggleLike(String userId, bool currentlyLiked) async {
+    final postNotifier = ref.read(postNotifierProvider.notifier);
 
-  Future<void> _checkIfLiked() async {
-    final authProvider = context.read<AuthProvider>();
-    final postProvider = context.read<PostProvider>();
-
-    if (authProvider.user != null) {
-      final isLiked = await postProvider.isPostLiked(
-        widget.post.postId,
-        authProvider.user!.uid,
-      );
-
-      if (mounted) {
-        setState(() {
-          _isLiked = isLiked;
-        });
-      }
-    }
-  }
-
-  Future<void> _toggleLike() async {
-    final authProvider = context.read<AuthProvider>();
-    final postProvider = context.read<PostProvider>();
-
-    if (authProvider.user == null) return;
-
-    setState(() {
-      _isLiked = !_isLiked;
-    });
-
-    if (_isLiked) {
-      await postProvider.likePost(widget.post.postId, authProvider.user!.uid);
+    if (currentlyLiked) {
+      await postNotifier.unlikePost(widget.post.postId, userId);
     } else {
-      await postProvider.unlikePost(widget.post.postId, authProvider.user!.uid);
+      await postNotifier.likePost(widget.post.postId, userId);
     }
+
+    // Invalidate to refresh the like status
+    ref.invalidate(postLikedProvider((postId: widget.post.postId, userId: userId)));
   }
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authStateProvider);
+    final currentUserId = authState.value?.uid ?? '';
+
+    final isLikedAsync = ref.watch(postLikedProvider((postId: widget.post.postId, userId: currentUserId)));
+    final isLiked = isLikedAsync.value ?? false;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -184,10 +161,12 @@ class _PostCardState extends State<PostCard> {
             children: [
               IconButton(
                 icon: Icon(
-                  _isLiked ? Icons.favorite : Icons.favorite_border,
-                  color: _isLiked ? Colors.red : null,
+                  isLiked ? Icons.favorite : Icons.favorite_border,
+                  color: isLiked ? Colors.red : null,
                 ),
-                onPressed: _toggleLike,
+                onPressed: currentUserId.isNotEmpty
+                    ? () => _toggleLike(currentUserId, isLiked)
+                    : null,
               ),
               IconButton(
                 icon: const Icon(Icons.chat_bubble_outline),
@@ -279,11 +258,13 @@ class _PostCardState extends State<PostCard> {
   }
 
   void _showPostOptions(BuildContext context) {
+    final authState = ref.read(authStateProvider);
+    final currentUserId = authState.value?.uid ?? '';
+
     showModalBottomSheet(
       context: context,
       builder: (context) {
-        final authProvider = context.read<AuthProvider>();
-        final isOwnPost = authProvider.user?.uid == widget.post.userId;
+        final isOwnPost = currentUserId == widget.post.userId;
 
         return SafeArea(
           child: Column(
@@ -353,8 +334,8 @@ class _PostCardState extends State<PostCard> {
     );
 
     if (confirmed == true && mounted) {
-      final postProvider = context.read<PostProvider>();
-      await postProvider.deletePost(widget.post.postId);
+      final postNotifier = ref.read(postNotifierProvider.notifier);
+      await postNotifier.deletePost(widget.post.postId);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

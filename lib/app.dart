@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'core/theme/app_theme.dart';
-import 'providers/auth_provider.dart';
-import 'providers/theme_provider.dart';
+import 'providers/auth_provider_riverpod.dart';
+import 'providers/theme_provider_riverpod.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/signup_screen.dart';
 import 'screens/home/home_screen.dart';
@@ -14,30 +14,31 @@ import 'screens/profile/edit_profile_screen.dart';
 import 'screens/search/search_screen.dart';
 import 'screens/notifications/notifications_screen.dart';
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Consumer2<ThemeProvider, AuthProvider>(
-      builder: (context, themeProvider, authProvider, child) {
-        final router = GoRouter(
-          initialLocation: authProvider.isAuthenticated ? '/home' : '/login',
-          redirect: (context, state) {
-            final isAuthenticated = authProvider.isAuthenticated;
-            final isLoginRoute = state.matchedLocation == '/login' ||
-                                 state.matchedLocation == '/signup';
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeModeProvider);
+    final authState = ref.watch(authStateProvider);
 
-            if (!isAuthenticated && !isLoginRoute) {
-              return '/login';
-            }
+    final router = GoRouter(
+      initialLocation: authState.value != null ? '/home' : '/login',
+      redirect: (context, state) {
+        final isAuthenticated = authState.value != null;
+        final isLoginRoute = state.matchedLocation == '/login' ||
+                             state.matchedLocation == '/signup';
 
-            if (isAuthenticated && isLoginRoute) {
-              return '/home';
-            }
+        if (!isAuthenticated && !isLoginRoute) {
+          return '/login';
+        }
 
-            return null;
-          },
+        if (isAuthenticated && isLoginRoute) {
+          return '/home';
+        }
+
+        return null;
+      },
           routes: [
             GoRoute(
               path: '/login',
@@ -84,15 +85,13 @@ class MyApp extends StatelessWidget {
           ],
         );
 
-        return MaterialApp.router(
-          title: 'SNS App',
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
-          themeMode: themeProvider.themeMode,
-          routerConfig: router,
-        );
-      },
+    return MaterialApp.router(
+      title: 'SNS App',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: themeMode,
+      routerConfig: router,
     );
   }
 }

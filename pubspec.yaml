@@ -16,6 +16,7 @@ dependencies:
   flutter_svg: ^2.0.9
   cached_network_image: ^3.3.0
   photo_view: ^0.14.0
+  fl_chart: ^0.66.0
 
   # State Management
   flutter_riverpod: ^2.4.9

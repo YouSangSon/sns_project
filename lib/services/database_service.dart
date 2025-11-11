@@ -9,6 +9,8 @@ import '../models/notification_model.dart';
 import '../models/reel_model.dart';
 import '../models/live_stream_model.dart';
 import '../models/product_model.dart';
+import '../models/saved_post_model.dart';
+import '../models/analytics_model.dart';
 import '../core/constants/app_constants.dart';
 
 class DatabaseService {
@@ -189,6 +191,20 @@ class DatabaseService {
       print('Error getting post: $e');
       return null;
     }
+  }
+
+  // Get post stream (real-time updates)
+  Stream<PostModel?> getPostStream(String postId) {
+    return _firestore
+        .collection(AppConstants.postsCollection)
+        .doc(postId)
+        .snapshots()
+        .map((doc) {
+      if (doc.exists) {
+        return PostModel.fromDocument(doc);
+      }
+      return null;
+    });
   }
 
   // Get user posts
@@ -1374,6 +1390,283 @@ class DatabaseService {
       });
     } catch (e) {
       print('Error updating order status: $e');
+      rethrow;
+    }
+  }
+
+  // ============ SAVED POSTS OPERATIONS ============
+
+  // Save post
+  Future<void> savePost(String userId, String postId) async {
+    try {
+      final saveId = '${userId}_$postId';
+      final savedPost = SavedPostModel(
+        saveId: saveId,
+        userId: userId,
+        postId: postId,
+        savedAt: DateTime.now(),
+      );
+
+      await _firestore.collection('saved_posts').doc(saveId).set(savedPost.toMap());
+    } catch (e) {
+      print('Error saving post: $e');
+      rethrow;
+    }
+  }
+
+  // Unsave post
+  Future<void> unsavePost(String userId, String postId) async {
+    try {
+      final saveId = '${userId}_$postId';
+      await _firestore.collection('saved_posts').doc(saveId).delete();
+    } catch (e) {
+      print('Error unsaving post: $e');
+      rethrow;
+    }
+  }
+
+  // Check if post is saved
+  Future<bool> isPostSaved(String userId, String postId) async {
+    try {
+      final saveId = '${userId}_$postId';
+      final doc = await _firestore.collection('saved_posts').doc(saveId).get();
+      return doc.exists;
+    } catch (e) {
+      print('Error checking if post is saved: $e');
+      return false;
+    }
+  }
+
+  // Get user's saved posts
+  Stream<List<PostModel>> getSavedPosts(String userId) {
+    return _firestore
+        .collection('saved_posts')
+        .where('userId', isEqualTo: userId)
+        .orderBy('savedAt', descending: true)
+        .snapshots()
+        .asyncMap((snapshot) async {
+      List<PostModel> posts = [];
+
+      for (var doc in snapshot.docs) {
+        final savedPost = SavedPostModel.fromDocument(doc);
+        final post = await getPostById(savedPost.postId);
+        if (post != null) {
+          posts.add(post);
+        }
+      }
+
+      return posts;
+    });
+  }
+
+  // ============ COMMENT REPLIES OPERATIONS ============
+
+  // Add reply to comment
+  Future<void> addReply({
+    required String postId,
+    required String parentCommentId,
+    required String userId,
+    required String username,
+    required String userPhotoUrl,
+    required String text,
+  }) async {
+    try {
+      final commentId = _uuid.v4();
+
+      final reply = CommentModel(
+        commentId: commentId,
+        postId: postId,
+        userId: userId,
+        username: username,
+        userPhotoUrl: userPhotoUrl,
+        text: text,
+        createdAt: DateTime.now(),
+        parentCommentId: parentCommentId,
+      );
+
+      await _firestore
+          .collection(AppConstants.commentsCollection)
+          .doc(commentId)
+          .set(reply.toMap());
+
+      // Increment replies count on parent comment
+      await _firestore
+          .collection(AppConstants.commentsCollection)
+          .doc(parentCommentId)
+          .update({'repliesCount': FieldValue.increment(1)});
+    } catch (e) {
+      print('Error adding reply: $e');
+      rethrow;
+    }
+  }
+
+  // Get replies for a comment
+  Stream<List<CommentModel>> getReplies(String commentId) {
+    return _firestore
+        .collection(AppConstants.commentsCollection)
+        .where('parentCommentId', isEqualTo: commentId)
+        .orderBy('createdAt', descending: false)
+        .snapshots()
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => CommentModel.fromDocument(doc)).toList());
+  }
+
+  // Get top-level comments (not replies)
+  Stream<List<CommentModel>> getTopLevelComments(String postId) {
+    return _firestore
+        .collection(AppConstants.commentsCollection)
+        .where('postId', isEqualTo: postId)
+        .where('parentCommentId', isEqualTo: null)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => CommentModel.fromDocument(doc)).toList());
+  }
+
+  // ============ USER TAGGING OPERATIONS ============
+
+  // Tag users in post
+  Future<void> tagUsersInPost(String postId, List<String> userIds) async {
+    try {
+      await _firestore.collection(AppConstants.postsCollection).doc(postId).update({
+        'taggedUserIds': userIds,
+        'updatedAt': Timestamp.now(),
+      });
+
+      // Create notifications for tagged users
+      for (final taggedUserId in userIds) {
+        // Get post data for notification
+        final postDoc =
+            await _firestore.collection(AppConstants.postsCollection).doc(postId).get();
+        if (postDoc.exists) {
+          final postData = postDoc.data()!;
+          await createNotification(
+            userId: taggedUserId,
+            type: 'tag',
+            fromUserId: postData['userId'],
+            fromUsername: postData['username'],
+            fromUserPhotoUrl: postData['userPhotoUrl'],
+            postId: postId,
+            postImageUrl: (postData['imageUrls'] as List).isNotEmpty
+                ? postData['imageUrls'][0]
+                : '',
+          );
+        }
+      }
+    } catch (e) {
+      print('Error tagging users: $e');
+      rethrow;
+    }
+  }
+
+  // Get posts where user is tagged
+  Stream<List<PostModel>> getPostsWhereUserIsTagged(String userId) {
+    return _firestore
+        .collection(AppConstants.postsCollection)
+        .where('taggedUserIds', arrayContains: userId)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => PostModel.fromDocument(doc)).toList());
+  }
+
+  // ============ ANALYTICS OPERATIONS ============
+
+  // Get user analytics
+  Future<UserAnalytics?> getUserAnalytics(String userId) async {
+    try {
+      final doc = await _firestore.collection('user_analytics').doc(userId).get();
+      if (doc.exists) {
+        return UserAnalytics.fromMap(doc.data()!);
+      }
+      return null;
+    } catch (e) {
+      print('Error getting user analytics: $e');
+      return null;
+    }
+  }
+
+  // Update user analytics
+  Future<void> updateUserAnalytics(UserAnalytics analytics) async {
+    try {
+      await _firestore
+          .collection('user_analytics')
+          .doc(analytics.userId)
+          .set(analytics.toMap(), SetOptions(merge: true));
+    } catch (e) {
+      print('Error updating user analytics: $e');
+      rethrow;
+    }
+  }
+
+  // Get post analytics
+  Future<PostAnalytics?> getPostAnalytics(String postId) async {
+    try {
+      final doc = await _firestore.collection('post_analytics').doc(postId).get();
+      if (doc.exists) {
+        return PostAnalytics.fromMap(doc.data()!);
+      }
+      return null;
+    } catch (e) {
+      print('Error getting post analytics: $e');
+      return null;
+    }
+  }
+
+  // Track post view
+  Future<void> trackPostView(String postId) async {
+    try {
+      final today = DateTime.now().toIso8601String().split('T')[0];
+
+      await _firestore.collection('post_analytics').doc(postId).set({
+        'postId': postId,
+        'views': FieldValue.increment(1),
+        'dailyViews.$today': FieldValue.increment(1),
+        'updatedAt': Timestamp.now(),
+      }, SetOptions(merge: true));
+    } catch (e) {
+      print('Error tracking post view: $e');
+      rethrow;
+    }
+  }
+
+  // Get growth metrics
+  Stream<List<GrowthMetrics>> getGrowthMetrics(
+    String userId, {
+    DateTime? startDate,
+    DateTime? endDate,
+  }) {
+    var query = _firestore
+        .collection('user_analytics')
+        .doc(userId)
+        .collection('growth_metrics')
+        .orderBy('date', descending: true);
+
+    if (startDate != null) {
+      query = query.where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate));
+    }
+
+    if (endDate != null) {
+      query = query.where('date', isLessThanOrEqualTo: Timestamp.fromDate(endDate));
+    }
+
+    return query.snapshots().map((snapshot) =>
+        snapshot.docs.map((doc) => GrowthMetrics.fromMap(doc.data())).toList());
+  }
+
+  // Record daily growth metrics
+  Future<void> recordGrowthMetrics(String userId, GrowthMetrics metrics) async {
+    try {
+      final dateStr = metrics.date.toIso8601String().split('T')[0];
+
+      await _firestore
+          .collection('user_analytics')
+          .doc(userId)
+          .collection('growth_metrics')
+          .doc(dateStr)
+          .set(metrics.toMap());
+    } catch (e) {
+      print('Error recording growth metrics: $e');
       rethrow;
     }
   }

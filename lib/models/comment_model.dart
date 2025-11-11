@@ -9,6 +9,8 @@ class CommentModel {
   final String text;
   final int likes;
   final DateTime createdAt;
+  final String? parentCommentId; // For replies
+  final int repliesCount;
 
   CommentModel({
     required this.commentId,
@@ -19,7 +21,12 @@ class CommentModel {
     required this.text,
     this.likes = 0,
     required this.createdAt,
+    this.parentCommentId,
+    this.repliesCount = 0,
   });
+
+  // Check if this is a reply
+  bool get isReply => parentCommentId != null;
 
   // Convert to Map for Firestore
   Map<String, dynamic> toMap() {
@@ -32,6 +39,8 @@ class CommentModel {
       'text': text,
       'likes': likes,
       'createdAt': Timestamp.fromDate(createdAt),
+      'parentCommentId': parentCommentId,
+      'repliesCount': repliesCount,
     };
   }
 
@@ -46,6 +55,8 @@ class CommentModel {
       text: map['text'] ?? '',
       likes: map['likes'] ?? 0,
       createdAt: (map['createdAt'] as Timestamp).toDate(),
+      parentCommentId: map['parentCommentId'],
+      repliesCount: map['repliesCount'] ?? 0,
     );
   }
 
@@ -65,6 +76,8 @@ class CommentModel {
     String? text,
     int? likes,
     DateTime? createdAt,
+    String? parentCommentId,
+    int? repliesCount,
   }) {
     return CommentModel(
       commentId: commentId ?? this.commentId,
@@ -75,6 +88,8 @@ class CommentModel {
       text: text ?? this.text,
       likes: likes ?? this.likes,
       createdAt: createdAt ?? this.createdAt,
+      parentCommentId: parentCommentId ?? this.parentCommentId,
+      repliesCount: repliesCount ?? this.repliesCount,
     );
   }
 }

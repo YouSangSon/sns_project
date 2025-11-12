@@ -108,12 +108,50 @@ Flutter로 구현한 **크로스 플랫폼** 소셜 네트워크 서비스 애�
   - 비디오 트리밍 및 병합
   - 비디오에 오디오 추가
 
+- **투자 SNS (Investment Social Network)** 📊 NEW!
+  - **Phase 1: 핵심 인프라**
+    - 투자 포트폴리오 관리 (생성, 조회, 수정)
+    - 자산 보유 현황 (주식, 암호화폐, ETF 등)
+    - 거래 내역 추적 (매수/매도)
+    - 실시간 수익률 계산
+    - API 키 안전 저장 (SecureVault)
+
+  - **Phase 2: 커뮤니티 & UI**
+    - 투자 아이디어 게시판
+    - 포트폴리오 공유 피드
+    - 투자 성과 인증
+    - 시장 분석 공유
+    - 투자 성향별 필터링
+    - 포트폴리오 분석 대시보드
+
+  - **Phase 3: 실시간 & 고급 기능** ⭐ NEW!
+    - **비동기/멀티Pod 환경 지원**
+      - Firestore Transaction 기반 동시성 제어
+      - WebSocket Connection Pooling
+      - 자동 재연결 & Heartbeat
+    - **실시간 가격 시스템**
+      - WebSocket 기반 실시간 주식/암호화폐 가격
+      - Finnhub & Binance 연동
+      - 실시간 가격 알림
+    - **종목 상세 페이지**
+      - Candlestick 차트
+      - LIVE 가격 업데이트
+      - 관심 종목 관리
+    - **투자 아이디어 상세**
+      - 커뮤니티 투표 (강세/약세)
+      - 실시간 투표 비율
+      - 댓글 시스템
+    - **투자 랭킹 리더보드**
+      - 전체/주간/인기 투자자 순위
+      - 수익률 기반 랭킹
+      - TOP 3 메달 시스템
+
 ### 🚧 향후 구현 예정
 - 게시물 저장 기능
-- 댓글에 답글
+- 댓글에 답글 (부분 구현 완료)
 - 사용자 태그
 - 다국어 지원
-- 고급 분석 대시보드
+- 고급 분석 대시보드 (부분 구현 완료)
 
 ## 🛠 기술 스택
 
@@ -161,6 +199,14 @@ dependencies:
   # Routing
   go_router: ^12.1.3
 
+  # Investment & Charts
+  fl_chart: ^0.65.0              # Charts for portfolio
+  candlesticks: ^2.1.0            # Candlestick charts
+  web_socket_channel: ^2.4.0      # WebSocket for real-time prices
+
+  # Security
+  flutter_secure_storage: ^9.0.0  # API key storage
+
   # Utils
   intl: ^0.18.1
   timeago: ^3.6.0
@@ -188,6 +234,7 @@ lib/
 │   ├── theme/
 │   │   └── app_theme.dart               # 테마 설정
 │   ├── utils/
+│   │   └── secure_vault.dart            # 🔐 API 키 안전 저장소
 │   └── widgets/
 ├── models/
 │   ├── user_model.dart                  # 사용자 모델
@@ -195,7 +242,14 @@ lib/
 │   ├── comment_model.dart               # 댓글 모델
 │   ├── story_model.dart                 # 스토리 모델
 │   ├── message_model.dart               # 메시지 모델
-│   └── notification_model.dart          # 알림 모델
+│   ├── notification_model.dart          # 알림 모델
+│   └── investment/                      # 📊 투자 모델
+│       ├── investment_portfolio.dart    # 포트폴리오 모델
+│       ├── asset_holding.dart           # 자산 보유 모델
+│       ├── trade_history.dart           # 거래 내역 모델
+│       ├── investment_post.dart         # 투자 게시물 모델
+│       ├── investment_idea.dart         # 투자 아이디어 모델
+│       └── watchlist.dart               # 관심 종목 모델
 ├── providers/                           # Riverpod Providers
 │   ├── auth_provider_riverpod.dart      # 인증 상태 관리
 │   ├── user_provider_riverpod.dart      # 사용자 상태 관리
@@ -209,7 +263,9 @@ lib/
 │   ├── database_service.dart            # Firebase 데이터베이스 서비스
 │   ├── storage_service.dart             # Firebase 스토리지 서비스
 │   ├── supabase_service.dart            # Supabase 서비스
-│   └── hybrid_database_service.dart     # 하이브리드 DB 서비스
+│   ├── hybrid_database_service.dart     # 하이브리드 DB 서비스
+│   ├── investment_service.dart          # 📊 투자 서비스 (포트폴리오, 거래, 랭킹)
+│   └── realtime_price_service.dart      # 📈 실시간 가격 WebSocket 서비스
 ├── screens/
 │   ├── auth/
 │   │   ├── login_screen.dart            # 로그인 화면
@@ -232,8 +288,17 @@ lib/
 │   ├── messages/
 │   │   ├── messages_screen.dart         # 대화 목록
 │   │   └── chat_screen.dart             # 채팅 화면
-│   └── notifications/
-│       └── notifications_screen.dart    # 알림 화면
+│   ├── notifications/
+│   │   └── notifications_screen.dart    # 알림 화면
+│   └── investment/                      # 📊 투자 화면
+│       ├── portfolio_screen.dart        # 포트폴리오 관리
+│       ├── trade_screen.dart            # 거래 화면
+│       ├── investment_feed_screen.dart  # 투자 피드
+│       ├── asset_detail_screen.dart     # 📈 종목 상세 (Candlestick 차트)
+│       ├── watchlist_screen.dart        # 관심 종목 관리
+│       ├── investment_post_detail_screen.dart  # 투자 아이디어 상세
+│       ├── leaderboard_screen.dart      # 🏆 투자 랭킹 리더보드
+│       └── portfolio_analytics_screen.dart  # 포트폴리오 분석
 └── widgets/
     ├── post_card.dart                   # 게시물 카드 위젯
     └── story_circle.dart                # 스토리 서클 위젯
@@ -325,6 +390,7 @@ users/
     - followers: number
     - following: number
     - posts: number
+    - hasPublicPortfolio: boolean      # 📊 투자 랭킹용
     - createdAt: timestamp
 
 posts/
@@ -350,6 +416,8 @@ comments/
     - userPhotoUrl: string
     - text: string
     - likes: number
+    - parentCommentId: string          # 답글 기능
+    - repliesCount: number
     - createdAt: timestamp
 
 likes/
@@ -363,6 +431,103 @@ follows/
     - followerId: string
     - followingId: string
     - createdAt: timestamp
+
+# 📊 투자 SNS Collections
+
+investment_portfolios/
+  {portfolioId}/
+    - portfolioId: string
+    - userId: string
+    - name: string
+    - description: string
+    - totalValue: number               # 총 자산 가치
+    - totalCost: number                # 총 투자 금액
+    - totalReturn: number              # 총 수익
+    - returnPercentage: number         # 수익률 (%)
+    - isPublic: boolean                # 공개 여부
+    - createdAt: timestamp
+    - updatedAt: timestamp
+
+asset_holdings/
+  {holdingId}/
+    - holdingId: string
+    - portfolioId: string
+    - userId: string
+    - assetSymbol: string              # 종목 심볼 (AAPL, BTC)
+    - assetName: string
+    - assetType: string                # stock/crypto/etf
+    - quantity: number
+    - averagePrice: number
+    - currentPrice: number
+    - totalValue: number
+    - unrealizedGain: number
+    - unrealizedGainPercent: number
+    - createdAt: timestamp
+    - updatedAt: timestamp
+
+trade_history/
+  {tradeId}/
+    - tradeId: string
+    - portfolioId: string
+    - userId: string
+    - assetSymbol: string
+    - assetName: string
+    - tradeType: string                # buy/sell
+    - quantity: number
+    - price: number
+    - totalAmount: number
+    - fee: number
+    - notes: string
+    - executedAt: timestamp
+
+investment_posts/
+  {postId}/
+    - postId: string
+    - userId: string
+    - username: string
+    - userPhotoUrl: string
+    - postType: string                 # idea/performance/trade/analysis
+    - content: string
+    - relatedAssets: array<string>
+    - sentiment: string                # bullish/bearish/neutral
+    - targetPrice: number
+    - timeHorizon: string              # short/medium/long
+    - hashtags: array<string>
+    - imageUrls: array<string>
+    - likes: number
+    - comments: number
+    - bookmarks: number
+    - bullishCount: number             # 강세 투표
+    - bearishCount: number             # 약세 투표
+    - createdAt: timestamp
+    - updatedAt: timestamp
+
+post_likes/                            # 🔒 Transaction용 별도 추적
+  {postId}_{userId}/
+    - postId: string
+    - userId: string
+    - likedAt: timestamp
+
+post_votes/                            # 🔒 Transaction용 투표 추적
+  {postId}_{userId}/
+    - postId: string
+    - userId: string
+    - isBullish: boolean
+    - votedAt: timestamp
+
+watchlists/
+  {watchlistId}/
+    - watchlistId: string
+    - userId: string
+    - assetSymbol: string
+    - assetName: string
+    - assetType: string
+    - addedPrice: number
+    - targetPrice: number              # 알림용
+    - alertEnabled: boolean
+    - alertCondition: string           # above/below/change
+    - addedAt: timestamp
+    - updatedAt: timestamp
 ```
 
 ## 🎨 디자인

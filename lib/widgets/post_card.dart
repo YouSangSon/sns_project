@@ -6,6 +6,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import '../models/post_model.dart';
 import '../providers/auth_provider_riverpod.dart';
 import '../providers/post_provider_riverpod.dart';
+import 'user_tag_widget.dart';
 
 class PostCard extends ConsumerStatefulWidget {
   final PostModel post;
@@ -221,6 +222,10 @@ class _PostCardState extends ConsumerState<PostCard> {
               ),
             ),
           ),
+
+        // Tagged users
+        if (widget.post.taggedUserIds.isNotEmpty)
+          TaggedUsersDisplay(taggedUserIds: widget.post.taggedUserIds),
 
         // View comments
         if (widget.post.comments > 0)

@@ -1,24 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:io';
-import '../../providers/auth_provider.dart';
-import '../../providers/post_provider.dart';
+import '../../providers/auth_provider_riverpod.dart';
+import '../../services/database_service.dart';
+import '../../services/storage_service.dart';
+import '../../models/post_model.dart';
+import '../../widgets/user_tag_widget.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/theme/app_theme.dart';
 
-class CreatePostScreen extends StatefulWidget {
+class CreatePostScreen extends ConsumerStatefulWidget {
   const CreatePostScreen({super.key});
 
   @override
-  State<CreatePostScreen> createState() => _CreatePostScreenState();
+  ConsumerState<CreatePostScreen> createState() => _CreatePostScreenState();
 }
 
-class _CreatePostScreenState extends State<CreatePostScreen> {
+class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   final _captionController = TextEditingController();
   final _locationController = TextEditingController();
   final List<String> _selectedImagePaths = [];
+  final List<String> _taggedUserIds = [];
   final ImagePicker _picker = ImagePicker();
+  final DatabaseService _databaseService = DatabaseService();
+  final StorageService _storageService = StorageService();
   bool _isLoading = false;
 
   @override
@@ -57,41 +64,95 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       return;
     }
 
+    final currentUserAsync = ref.read(currentUserProvider);
+    final currentUser = currentUserAsync.value;
+
+    if (currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please log in to create a post')),
+      );
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
 
-    final authProvider = context.read<AuthProvider>();
-    final postProvider = context.read<PostProvider>();
-
-    if (authProvider.user != null && authProvider.userModel != null) {
-      final success = await postProvider.createPost(
-        userId: authProvider.user!.uid,
-        username: authProvider.userModel!.username,
-        userPhotoUrl: authProvider.userModel!.photoUrl,
-        imagePaths: _selectedImagePaths,
-        caption: _captionController.text.trim(),
-        location: _locationController.text.trim(),
+    try {
+      // Upload images
+      final imageUrls = await _storageService.uploadPostImages(
+        _selectedImagePaths,
+        currentUser.uid,
       );
+
+      if (imageUrls.isEmpty) {
+        throw Exception('Failed to upload images');
+      }
+
+      // Create post
+      final post = PostModel(
+        postId: '',
+        userId: currentUser.uid,
+        username: currentUser.username,
+        userPhotoUrl: currentUser.photoUrl,
+        imageUrls: imageUrls,
+        caption: _captionController.text.trim(),
+        location: _locationController.text.trim().isEmpty
+            ? null
+            : _locationController.text.trim(),
+        taggedUserIds: _taggedUserIds,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      await _databaseService.createPost(post);
+
+      // If users are tagged, create notifications
+      if (_taggedUserIds.isNotEmpty) {
+        await _databaseService.tagUsersInPost(post.postId, _taggedUserIds);
+      }
 
       setState(() {
         _isLoading = false;
       });
 
-      if (success && mounted) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Post created successfully')),
         );
         context.go('/home');
-      } else if (mounted) {
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(postProvider.errorMessage ?? 'Failed to create post'),
+            content: Text('Failed to create post: $e'),
             backgroundColor: Colors.red,
           ),
         );
       }
     }
+  }
+
+  void _openTagPeople() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => UserTagSelector(
+          selectedUserIds: _taggedUserIds,
+          onUsersSelected: (userIds) {
+            setState(() {
+              _taggedUserIds.clear();
+              _taggedUserIds.addAll(userIds);
+            });
+          },
+        ),
+      ),
+    );
   }
 
   @override
@@ -230,12 +291,47 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             // Additional options
             ListTile(
               leading: const Icon(Icons.tag),
-              title: const Text('Tag people'),
+              title: Text(
+                _taggedUserIds.isEmpty
+                    ? 'Tag people'
+                    : 'Tag people (${_taggedUserIds.length})',
+              ),
               trailing: const Icon(Icons.chevron_right),
-              onTap: () {
-                // Tag people functionality
-              },
+              onTap: _openTagPeople,
             ),
+
+            if (_taggedUserIds.isNotEmpty) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: _taggedUserIds.map((userId) {
+                    return FutureBuilder(
+                      future: _databaseService.getUserById(userId),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) return const SizedBox.shrink();
+                        final user = snapshot.data!;
+                        return Chip(
+                          avatar: const Icon(Icons.person, size: 16),
+                          label: Text(
+                            user.username,
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                          visualDensity: VisualDensity.compact,
+                          onDeleted: () {
+                            setState(() {
+                              _taggedUserIds.remove(userId);
+                            });
+                          },
+                        );
+                      },
+                    );
+                  }).toList(),
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
 
             const Divider(),
 
@@ -244,7 +340,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               title: const Text('Add music'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
-                // Add music functionality
+                // Add music functionality - future feature
               },
             ),
           ],

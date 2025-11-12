@@ -9,9 +9,11 @@ class PostModel {
   final String caption;
   final String location;
   final List<String> hashtags;
+  final List<String> taggedUserIds; // Tagged users
   final int likes;
   final int comments;
   final DateTime createdAt;
+  final DateTime updatedAt;
 
   PostModel({
     required this.postId,
@@ -22,10 +24,12 @@ class PostModel {
     this.caption = '',
     this.location = '',
     this.hashtags = const [],
+    this.taggedUserIds = const [],
     this.likes = 0,
     this.comments = 0,
     required this.createdAt,
-  });
+    DateTime? updatedAt,
+  }) : updatedAt = updatedAt ?? createdAt;
 
   // Convert to Map for Firestore
   Map<String, dynamic> toMap() {
@@ -38,9 +42,11 @@ class PostModel {
       'caption': caption,
       'location': location,
       'hashtags': hashtags,
+      'taggedUserIds': taggedUserIds,
       'likes': likes,
       'comments': comments,
       'createdAt': Timestamp.fromDate(createdAt),
+      'updatedAt': Timestamp.fromDate(updatedAt),
     };
   }
 
@@ -55,9 +61,11 @@ class PostModel {
       caption: map['caption'] ?? '',
       location: map['location'] ?? '',
       hashtags: List<String>.from(map['hashtags'] ?? []),
+      taggedUserIds: List<String>.from(map['taggedUserIds'] ?? []),
       likes: map['likes'] ?? 0,
       comments: map['comments'] ?? 0,
       createdAt: (map['createdAt'] as Timestamp).toDate(),
+      updatedAt: (map['updatedAt'] as Timestamp?)?.toDate(),
     );
   }
 
@@ -84,9 +92,11 @@ class PostModel {
     String? caption,
     String? location,
     List<String>? hashtags,
+    List<String>? taggedUserIds,
     int? likes,
     int? comments,
     DateTime? createdAt,
+    DateTime? updatedAt,
   }) {
     return PostModel(
       postId: postId ?? this.postId,
@@ -97,9 +107,11 @@ class PostModel {
       caption: caption ?? this.caption,
       location: location ?? this.location,
       hashtags: hashtags ?? this.hashtags,
+      taggedUserIds: taggedUserIds ?? this.taggedUserIds,
       likes: likes ?? this.likes,
       comments: comments ?? this.comments,
       createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 }

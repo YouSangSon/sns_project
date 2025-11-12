@@ -395,26 +395,150 @@ class InvestmentService {
             .toList());
   }
 
-  /// Like investment post
+  /// Get single investment post by ID
+  Stream<InvestmentPost?> getInvestmentPostById(String postId) {
+    return _firestore
+        .collection(_investmentPostsCollection)
+        .doc(postId)
+        .snapshots()
+        .map((snapshot) {
+      if (snapshot.exists) {
+        return InvestmentPost.fromDocument(snapshot);
+      }
+      return null;
+    });
+  }
+
+  /// Like investment post (with transaction for concurrency control)
   Future<void> likeInvestmentPost(String postId, String userId) async {
     try {
-      await _firestore.collection(_investmentPostsCollection).doc(postId).update({
-        'likes': FieldValue.increment(1),
-      });
+      // Track user's like to prevent duplicates
+      final likeDoc = _firestore
+          .collection('post_likes')
+          .doc('${postId}_$userId');
+
+      final likeSnapshot = await likeDoc.get();
+
+      if (likeSnapshot.exists) {
+        // Unlike
+        await _firestore.runTransaction((transaction) async {
+          final postRef = _firestore.collection(_investmentPostsCollection).doc(postId);
+          final postSnapshot = await transaction.get(postRef);
+
+          if (postSnapshot.exists) {
+            transaction.update(postRef, {
+              'likes': FieldValue.increment(-1),
+            });
+            transaction.delete(likeDoc);
+          }
+        });
+      } else {
+        // Like
+        await _firestore.runTransaction((transaction) async {
+          final postRef = _firestore.collection(_investmentPostsCollection).doc(postId);
+          final postSnapshot = await transaction.get(postRef);
+
+          if (postSnapshot.exists) {
+            transaction.update(postRef, {
+              'likes': FieldValue.increment(1),
+            });
+            transaction.set(likeDoc, {
+              'postId': postId,
+              'userId': userId,
+              'likedAt': Timestamp.now(),
+            });
+          }
+        });
+      }
     } catch (e) {
       print('Error liking investment post: $e');
+      rethrow;
     }
   }
 
-  /// Vote bullish/bearish on post
-  Future<void> voteOnPost(String postId, bool isBullish) async {
+  /// Check if user liked post
+  Future<bool> hasLikedPost(String postId, String userId) async {
     try {
-      final field = isBullish ? 'bullishCount' : 'bearishCount';
-      await _firestore.collection(_investmentPostsCollection).doc(postId).update({
-        field: FieldValue.increment(1),
+      final doc = await _firestore
+          .collection('post_likes')
+          .doc('${postId}_$userId')
+          .get();
+      return doc.exists;
+    } catch (e) {
+      print('Error checking like status: $e');
+      return false;
+    }
+  }
+
+  /// Vote bullish/bearish on post (with transaction for concurrency control)
+  Future<void> voteOnPost(String postId, String userId, bool isBullish) async {
+    try {
+      final voteDoc = _firestore
+          .collection('post_votes')
+          .doc('${postId}_$userId');
+
+      await _firestore.runTransaction((transaction) async {
+        final voteSnapshot = await transaction.get(voteDoc);
+        final postRef = _firestore.collection(_investmentPostsCollection).doc(postId);
+        final postSnapshot = await transaction.get(postRef);
+
+        if (!postSnapshot.exists) return;
+
+        if (voteSnapshot.exists) {
+          // User already voted, change vote
+          final previousVote = voteSnapshot.data()?['isBullish'] as bool;
+
+          if (previousVote == isBullish) {
+            // Same vote, remove it
+            transaction.update(postRef, {
+              isBullish ? 'bullishCount' : 'bearishCount': FieldValue.increment(-1),
+            });
+            transaction.delete(voteDoc);
+          } else {
+            // Different vote, switch
+            transaction.update(postRef, {
+              'bullishCount': FieldValue.increment(isBullish ? 1 : -1),
+              'bearishCount': FieldValue.increment(isBullish ? -1 : 1),
+            });
+            transaction.update(voteDoc, {
+              'isBullish': isBullish,
+              'votedAt': Timestamp.now(),
+            });
+          }
+        } else {
+          // New vote
+          transaction.update(postRef, {
+            isBullish ? 'bullishCount' : 'bearishCount': FieldValue.increment(1),
+          });
+          transaction.set(voteDoc, {
+            'postId': postId,
+            'userId': userId,
+            'isBullish': isBullish,
+            'votedAt': Timestamp.now(),
+          });
+        }
       });
     } catch (e) {
       print('Error voting on post: $e');
+      rethrow;
+    }
+  }
+
+  /// Get user's vote on post
+  Future<bool?> getUserVote(String postId, String userId) async {
+    try {
+      final doc = await _firestore
+          .collection('post_votes')
+          .doc('${postId}_$userId')
+          .get();
+
+      if (doc.exists) {
+        return doc.data()?['isBullish'] as bool?;
+      }
+      return null;
+    } catch (e) {
+      print('Error getting user vote: $e');
+      return null;
     }
   }
 
@@ -566,5 +690,151 @@ class InvestmentService {
       print('Error checking watchlist: $e');
       return false;
     }
+  }
+
+  // ========== LEADERBOARD OPERATIONS ==========
+
+  /// Get top performers leaderboard
+  /// Returns portfolios sorted by return percentage
+  Stream<List<Map<String, dynamic>>> getTopPerformers({int limit = 50}) {
+    return _firestore
+        .collection(_portfoliosCollection)
+        .where('isPublic', isEqualTo: true)
+        .orderBy('returnPercentage', descending: true)
+        .limit(limit)
+        .snapshots()
+        .asyncMap((snapshot) async {
+      List<Map<String, dynamic>> leaderboard = [];
+
+      for (var doc in snapshot.docs) {
+        final portfolio = InvestmentPortfolio.fromDocument(doc);
+
+        // Get user details
+        final userDoc = await _firestore
+            .collection('users')
+            .doc(portfolio.userId)
+            .get();
+
+        final userData = userDoc.data();
+
+        leaderboard.add({
+          'portfolio': portfolio,
+          'username': userData?['username'] ?? 'Unknown',
+          'userPhotoUrl': userData?['photoUrl'] ?? '',
+          'followers': userData?['followers'] ?? 0,
+        });
+      }
+
+      return leaderboard;
+    });
+  }
+
+  /// Get user's rank in leaderboard
+  Future<int?> getUserRank(String userId) async {
+    try {
+      // Get user's best portfolio
+      final userPortfolios = await _firestore
+          .collection(_portfoliosCollection)
+          .where('userId', isEqualTo: userId)
+          .where('isPublic', isEqualTo: true)
+          .orderBy('returnPercentage', descending: true)
+          .limit(1)
+          .get();
+
+      if (userPortfolios.docs.isEmpty) {
+        return null;
+      }
+
+      final userBestReturn = userPortfolios.docs.first.data()['returnPercentage'] ?? 0.0;
+
+      // Count portfolios with higher return
+      final higherPortfolios = await _firestore
+          .collection(_portfoliosCollection)
+          .where('isPublic', isEqualTo: true)
+          .where('returnPercentage', isGreaterThan: userBestReturn)
+          .get();
+
+      return higherPortfolios.docs.length + 1;
+    } catch (e) {
+      print('Error getting user rank: $e');
+      return null;
+    }
+  }
+
+  /// Get weekly top performers (portfolios updated in last 7 days)
+  Stream<List<Map<String, dynamic>>> getWeeklyTopPerformers({int limit = 50}) {
+    final weekAgo = DateTime.now().subtract(const Duration(days: 7));
+
+    return _firestore
+        .collection(_portfoliosCollection)
+        .where('isPublic', isEqualTo: true)
+        .where('updatedAt', isGreaterThan: Timestamp.fromDate(weekAgo))
+        .orderBy('updatedAt', descending: false)
+        .orderBy('returnPercentage', descending: true)
+        .limit(limit)
+        .snapshots()
+        .asyncMap((snapshot) async {
+      List<Map<String, dynamic>> leaderboard = [];
+
+      for (var doc in snapshot.docs) {
+        final portfolio = InvestmentPortfolio.fromDocument(doc);
+
+        final userDoc = await _firestore
+            .collection('users')
+            .doc(portfolio.userId)
+            .get();
+
+        final userData = userDoc.data();
+
+        leaderboard.add({
+          'portfolio': portfolio,
+          'username': userData?['username'] ?? 'Unknown',
+          'userPhotoUrl': userData?['photoUrl'] ?? '',
+          'followers': userData?['followers'] ?? 0,
+        });
+      }
+
+      return leaderboard;
+    });
+  }
+
+  /// Get top investors by follower count
+  Stream<List<Map<String, dynamic>>> getTopInvestorsByFollowers({int limit = 50}) {
+    return _firestore
+        .collection('users')
+        .where('hasPublicPortfolio', isEqualTo: true)
+        .orderBy('followers', descending: true)
+        .limit(limit)
+        .snapshots()
+        .asyncMap((snapshot) async {
+      List<Map<String, dynamic>> topInvestors = [];
+
+      for (var userDoc in snapshot.docs) {
+        final userData = userDoc.data();
+
+        // Get user's best portfolio
+        final portfolios = await _firestore
+            .collection(_portfoliosCollection)
+            .where('userId', isEqualTo: userDoc.id)
+            .where('isPublic', isEqualTo: true)
+            .orderBy('returnPercentage', descending: true)
+            .limit(1)
+            .get();
+
+        if (portfolios.docs.isNotEmpty) {
+          final portfolio = InvestmentPortfolio.fromDocument(portfolios.docs.first);
+
+          topInvestors.add({
+            'userId': userDoc.id,
+            'username': userData['username'] ?? 'Unknown',
+            'userPhotoUrl': userData['photoUrl'] ?? '',
+            'followers': userData['followers'] ?? 0,
+            'portfolio': portfolio,
+          });
+        }
+      }
+
+      return topInvestors;
+    });
   }
 }

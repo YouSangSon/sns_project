@@ -1,17 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:dio/dio.dart';
 
-/// Global error handler for the app
+/// Global error handler for the app (REST API only)
 class ErrorHandler {
   /// Handle and format error messages
   static String getErrorMessage(dynamic error) {
     if (error is DioException) {
       return _handleDioError(error);
-    }
-
-    if (error is FirebaseException) {
-      return _handleFirebaseError(error);
     }
 
     if (error is Exception) {
@@ -67,28 +62,6 @@ class ErrorHandler {
       case DioExceptionType.unknown:
       default:
         return error.message ?? '알 수 없는 오류가 발생했습니다';
-    }
-  }
-
-  /// Handle Firebase-specific errors
-  static String _handleFirebaseError(FirebaseException error) {
-    switch (error.code) {
-      case 'permission-denied':
-        return '권한이 없습니다';
-      case 'not-found':
-        return '데이터를 찾을 수 없습니다';
-      case 'already-exists':
-        return '이미 존재하는 데이터입니다';
-      case 'unauthenticated':
-        return '로그인이 필요합니다';
-      case 'unavailable':
-        return '서버에 연결할 수 없습니다';
-      case 'cancelled':
-        return '작업이 취소되었습니다';
-      case 'deadline-exceeded':
-        return '요청 시간이 초과되었습니다';
-      default:
-        return error.message ?? '오류가 발생했습니다';
     }
   }
 

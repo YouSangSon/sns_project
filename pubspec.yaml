@@ -22,14 +22,7 @@ dependencies:
   flutter_riverpod: ^2.4.9
   riverpod_annotation: ^2.3.3
 
-  # Firebase
-  firebase_core: ^2.24.2
-  firebase_auth: ^4.15.3
-  cloud_firestore: ^4.13.6
-  firebase_storage: ^11.5.6
-  firebase_messaging: ^14.7.9
-
-  # Supabase
+  # Supabase (Optional - for REST API alternative)
   supabase_flutter: ^2.3.4
   postgrest: ^2.1.1
 

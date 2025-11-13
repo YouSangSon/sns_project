@@ -54,6 +54,7 @@ dependencies:
 
   # Push Notifications
   flutter_local_notifications: ^16.3.0
+  onesignal_flutter: ^5.0.4
 
   # Routing
   go_router: ^12.1.3

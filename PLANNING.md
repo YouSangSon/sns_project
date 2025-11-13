@@ -353,7 +353,32 @@ watchlists/{watchlistId}
   - targetPrice: number
   - alertEnabled: boolean
   - alertCondition: string (above/below/change)
+  - alertTriggered: boolean
+  - alertTriggeredAt: timestamp
+  - alertTriggeredPrice: number
   - addedAt: timestamp
+
+bookmarks/{bookmarkId}
+  - bookmarkId: string
+  - userId: string
+  - contentId: string
+  - type: string (post/investment_post/reel)
+  - contentPreview: string
+  - contentImageUrl: string
+  - authorUsername: string
+  - authorPhotoUrl: string
+  - createdAt: timestamp
+
+followed_portfolios/{followId}
+  - userId: string
+  - portfolioId: string
+  - followedAt: timestamp
+
+copied_portfolios/{copyId}
+  - userId: string
+  - sourcePortfolioId: string
+  - newPortfolioId: string
+  - copiedAt: timestamp
 ```
 
 ## 🎨 UI/UX 설계
@@ -504,15 +529,90 @@ Comments       Follow/Unfollow                         Settings
   - 사용자 순위 자동 계산
   - TOP 3 메달 시스템
 
+#### Phase 4: 게시물 저장 & 북마크 (✅ 완료)
+- **북마크 시스템**
+  - BookmarkModel, BookmarkService
+  - 게시물, 투자 아이디어, 릴스 저장
+  - 북마크 카운트 자동 업데이트
+  - 타입별 필터링
+- **저장된 게시물 화면**
+  - SavedPostsScreen
+  - 3탭 구조 (전체/일반/투자)
+  - 그리드 뷰 UI
+  - 롱프레스 옵션 메뉴
+  - 컨텐츠 타입 아이콘 배지
+- **사용자 태그**
+  - UserTagModel
+  - 게시물 내 사용자 태그 기능
+
+#### Phase 5: 투자 알림 시스템 (✅ 완료)
+- **가격 알림 서비스**
+  - PriceAlertService
+  - 실시간 가격 모니터링
+  - 목표가 도달 알림 (이상/이하/변동률)
+  - 자동 구독 관리
+  - 알림 트리거 후 자동 비활성화
+- **워치리스트 모니터링**
+  - startMonitoringUser() / stopMonitoringUser()
+  - 사용자별 다중 종목 추적
+  - 백그라운드 가격 체크
+  - Notification 생성 및 저장
+
+#### Phase 6: 고급 분석 대시보드 (✅ 완료)
+- **포트폴리오 분석 서비스**
+  - PortfolioAnalyticsService
+  - 위험도 점수 계산 (0-100)
+    - Concentration Risk (Herfindahl Index)
+    - Asset Type Risk (가중 평균)
+  - 다각화 점수 계산
+    - 자산 유형 다양성
+    - 자산 개수
+    - 균형도 (Balance)
+  - Sharpe Ratio 계산
+  - 섹터 배분 분석
+- **성과 지표**
+  - 리스크 레벨 (낮음/중간/높음/매우높음)
+  - 다각화 점수 (0-100)
+  - Sharpe Ratio
+  - 섹터별 배분 비율
+
+#### Phase 7: 소셜 투자 기능 (✅ 완료)
+- **소셜 트레이딩 서비스**
+  - SocialTradingService
+  - 포트폴리오 팔로우/언팔로우
+  - 팔로워 수 자동 업데이트
+  - 포트폴리오 복사 기능
+    - 자산 구성 복사
+    - 사용자별 수량 설정 (초기값 0)
+  - 트렌딩 포트폴리오 (팔로워 순)
+- **포트폴리오 소셜 기능**
+  - followed_portfolios 컬렉션
+  - copied_portfolios 추적
+  - 팔로워 카운트 관리
+
+#### Phase 8: 최적화 & 완성 (✅ 완료)
+- **에러 핸들러**
+  - ErrorHandler 유틸리티
+  - Firebase 에러 메시지 한글화
+  - 에러/성공/정보 SnackBar
+  - 로딩 다이얼로그
+  - 확인 다이얼로그 (위험 작업)
+  - 에러 로깅 (디버깅용)
+- **사용자 경험 개선**
+  - 명확한 에러 메시지
+  - 로딩 상태 표시
+  - 확인 필요 작업에 다이얼로그
+  - 일관된 UI/UX 패턴
+
 ## 📈 향후 확장 가능성
 
 1. 릴스(Reels) - 짧은 비디오 (✅ 완료)
 2. 쇼핑 기능 (✅ 완료)
 3. 라이브 스트리밍 (✅ 완료)
 4. AR 필터
-5. 다국어 지원
+5. 다국어 지원 (i18n)
 6. 웹 버전 (✅ 완료)
-7. 투자 SNS (✅ Phase 1, 2, 3 완료)
+7. 투자 SNS (✅ Phase 1-8 완료)
 
 ## 🎓 학습 목표
 

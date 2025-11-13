@@ -124,7 +124,7 @@ Flutter로 구현한 **크로스 플랫폼** 소셜 네트워크 서비스 애�
     - 투자 성향별 필터링
     - 포트폴리오 분석 대시보드
 
-  - **Phase 3: 실시간 & 고급 기능** ⭐ NEW!
+  - **Phase 3: 실시간 & 고급 기능** ⭐
     - **비동기/멀티Pod 환경 지원**
       - Firestore Transaction 기반 동시성 제어
       - WebSocket Connection Pooling
@@ -146,12 +146,73 @@ Flutter로 구현한 **크로스 플랫폼** 소셜 네트워크 서비스 애�
       - 수익률 기반 랭킹
       - TOP 3 메달 시스템
 
+  - **Phase 4: 게시물 저장 & 북마크** ⭐ NEW!
+    - **북마크 시스템**
+      - 게시물, 투자 아이디어, 릴스 저장
+      - 북마크 카운트 자동 업데이트
+      - 타입별 필터링 (전체/일반/투자)
+    - **저장된 게시물 화면**
+      - 3탭 구조 그리드 뷰
+      - 롱프레스 옵션 메뉴
+      - 컨텐츠 타입 아이콘 배지
+    - **사용자 태그 모델**
+
+  - **Phase 5: 투자 알림 시스템** ⭐ NEW!
+    - **가격 알림 서비스**
+      - 실시간 가격 모니터링
+      - 목표가 도달 알림 (이상/이하/변동률)
+      - 자동 구독 관리
+      - 알림 후 자동 비활성화
+    - **워치리스트 모니터링**
+      - 사용자별 다중 종목 추적
+      - 백그라운드 가격 체크
+      - 알림 트리거 및 Notification 생성
+
+  - **Phase 6: 고급 분석 대시보드** ⭐ NEW!
+    - **포트폴리오 분석**
+      - 위험도 점수 (0-100)
+        - Concentration Risk (Herfindahl Index)
+        - Asset Type Risk (가중 평균)
+      - 다각화 점수
+        - 자산 유형 다양성
+        - 자산 개수
+        - 균형도
+      - Sharpe Ratio 계산
+      - 섹터 배분 분석
+    - **성과 지표**
+      - 리스크 레벨 (낮음/중간/높음/매우높음)
+      - 다각화 점수 (0-100)
+
+  - **Phase 7: 소셜 투자 기능** ⭐ NEW!
+    - **소셜 트레이딩**
+      - 포트폴리오 팔로우/언팔로우
+      - 팔로워 수 자동 업데이트
+      - 포트폴리오 복사 기능
+        - 자산 구성 복사
+        - 사용자별 수량 설정
+      - 트렌딩 포트폴리오 (팔로워 순)
+    - **포트폴리오 소셜 기능**
+      - followed_portfolios 추적
+      - copied_portfolios 기록
+
+  - **Phase 8: 최적화 & 완성** ⭐ NEW!
+    - **에러 핸들러**
+      - Firebase 에러 메시지 한글화
+      - 에러/성공/정보 SnackBar
+      - 로딩 다이얼로그
+      - 확인 다이얼로그
+      - 에러 로깅
+    - **사용자 경험 개선**
+      - 명확한 에러 메시지
+      - 로딩 상태 표시
+      - 위험 작업 확인 다이얼로그
+
 ### 🚧 향후 구현 예정
-- 게시물 저장 기능
-- 댓글에 답글 (부분 구현 완료)
-- 사용자 태그
-- 다국어 지원
-- 고급 분석 대시보드 (부분 구현 완료)
+- 다국어 지원 (i18n)
+- 다크 모드 테마 완성
+- 오프라인 모드
+- 푸시 알림 고도화
+- 성능 모니터링 및 분석
 
 ## 🛠 기술 스택
 
@@ -526,8 +587,38 @@ watchlists/
     - targetPrice: number              # 알림용
     - alertEnabled: boolean
     - alertCondition: string           # above/below/change
+    - alertTriggered: boolean          # Phase 5: 알림 트리거됨
+    - alertTriggeredAt: timestamp      # Phase 5: 알림 트리거 시간
+    - alertTriggeredPrice: number      # Phase 5: 알림 트리거 가격
     - addedAt: timestamp
     - updatedAt: timestamp
+
+# 📊 Phase 4-8 Collections
+
+bookmarks/                             # Phase 4: 북마크
+  {bookmarkId}/
+    - bookmarkId: string
+    - userId: string
+    - contentId: string                # postId, investmentPostId, reelId
+    - type: string                     # post/investment_post/reel
+    - contentPreview: string           # 캐시된 미리보기
+    - contentImageUrl: string
+    - authorUsername: string
+    - authorPhotoUrl: string
+    - createdAt: timestamp
+
+followed_portfolios/                   # Phase 7: 포트폴리오 팔로우
+  {followId}/
+    - userId: string
+    - portfolioId: string
+    - followedAt: timestamp
+
+copied_portfolios/                     # Phase 7: 포트폴리오 복사 추적
+  {copyId}/
+    - userId: string
+    - sourcePortfolioId: string
+    - newPortfolioId: string
+    - copiedAt: timestamp
 ```
 
 ## 🎨 디자인

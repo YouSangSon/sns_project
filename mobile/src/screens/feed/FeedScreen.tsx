@@ -8,11 +8,18 @@ import {
   Text,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useFeedPosts } from '../../hooks/usePosts';
 import { PostCard } from '../../components/posts';
 import { COLORS } from '../../constants';
+import type { RootStackParamList } from '../../navigation/types';
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const FeedScreen = () => {
+  const navigation = useNavigation<NavigationProp>();
+
   const {
     data,
     fetchNextPage,
@@ -74,7 +81,7 @@ const FeedScreen = () => {
         renderItem={({ item }) => (
           <PostCard
             post={item}
-            onComment={() => console.log('Comment:', item.postId)}
+            onComment={() => navigation.navigate('PostDetail', { postId: item.postId })}
             onShare={() => console.log('Share:', item.postId)}
             onUserPress={() => console.log('User:', item.userId)}
           />

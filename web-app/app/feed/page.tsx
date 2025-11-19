@@ -121,7 +121,7 @@ export default function FeedPage() {
               <PostCard
                 key={post.postId}
                 post={post}
-                onComment={() => console.log('Comment:', post.postId)}
+                onComment={() => router.push(`/posts/${post.postId}`)}
                 onShare={() => console.log('Share:', post.postId)}
                 onUserClick={() => console.log('User:', post.userId)}
               />

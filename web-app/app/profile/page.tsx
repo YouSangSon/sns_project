@@ -153,7 +153,7 @@ export default function ProfilePage() {
               <div className="flex gap-3">
                 {isOwnProfile ? (
                   <button
-                    onClick={() => console.log('Edit profile')}
+                    onClick={() => router.push('/profile/edit')}
                     className="px-6 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg font-semibold transition-colors"
                   >
                     Edit Profile

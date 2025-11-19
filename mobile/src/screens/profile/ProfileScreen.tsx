@@ -12,15 +12,21 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuthStore } from '../../stores/authStore';
 import { useUserProfile, useUserPosts, useFollowUser, useUnfollowUser } from '../../hooks/useProfile';
 import { COLORS } from '../../constants';
 import type { Post } from '../../../../shared/types';
+import type { RootStackParamList } from '../../navigation/types';
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const { width } = Dimensions.get('window');
 const GRID_ITEM_SIZE = width / 3;
 
 export const ProfileScreen = () => {
+  const navigation = useNavigation<NavigationProp>();
   const { user: currentUser } = useAuthStore();
   const [isFollowing, setIsFollowing] = useState(false);
 
@@ -131,7 +137,7 @@ export const ProfileScreen = () => {
         {isOwnProfile ? (
           <TouchableOpacity
             style={styles.editButton}
-            onPress={() => console.log('Edit profile')}
+            onPress={() => navigation.navigate('EditProfile')}
           >
             <Text style={styles.editButtonText}>Edit Profile</Text>
           </TouchableOpacity>

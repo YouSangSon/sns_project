@@ -74,7 +74,6 @@ const FeedScreen = () => {
         renderItem={({ item }) => (
           <PostCard
             post={item}
-            onLike={() => console.log('Like:', item.postId)}
             onComment={() => console.log('Comment:', item.postId)}
             onShare={() => console.log('Share:', item.postId)}
             onUserPress={() => console.log('User:', item.userId)}

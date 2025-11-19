@@ -10,10 +10,10 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import type { Post } from '../../../shared/types';
 import { COLORS } from '../constants';
+import { useLikePost, useUnlikePost } from '../../hooks/usePosts';
 
 interface PostCardProps {
   post: Post;
-  onLike?: () => void;
   onComment?: () => void;
   onShare?: () => void;
   onUserPress?: () => void;
@@ -23,17 +23,37 @@ const { width } = Dimensions.get('window');
 
 export const PostCard: React.FC<PostCardProps> = ({
   post,
-  onLike,
   onComment,
   onShare,
   onUserPress,
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(post.likes);
 
-  const handleLike = () => {
-    setIsLiked(!isLiked);
-    onLike?.();
+  const likeMutation = useLikePost();
+  const unlikeMutation = useUnlikePost();
+
+  const handleLike = async () => {
+    const wasLiked = isLiked;
+    const previousCount = likesCount;
+
+    // Optimistic update
+    setIsLiked(!wasLiked);
+    setLikesCount(wasLiked ? likesCount - 1 : likesCount + 1);
+
+    try {
+      if (wasLiked) {
+        await unlikeMutation.mutateAsync(post.postId);
+      } else {
+        await likeMutation.mutateAsync(post.postId);
+      }
+    } catch (error) {
+      // Revert on error
+      setIsLiked(wasLiked);
+      setLikesCount(previousCount);
+      console.error('Error toggling like:', error);
+    }
   };
 
   return (
@@ -111,7 +131,7 @@ export const PostCard: React.FC<PostCardProps> = ({
       {/* Likes Count */}
       <TouchableOpacity style={styles.likesContainer}>
         <Text style={styles.likes}>
-          {post.likes.toLocaleString()} likes
+          {likesCount.toLocaleString()} likes
         </Text>
       </TouchableOpacity>
 

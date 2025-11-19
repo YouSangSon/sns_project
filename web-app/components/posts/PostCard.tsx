@@ -3,10 +3,10 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import type { Post } from '../../../shared/types';
+import { useLikePost, useUnlikePost } from '../../lib/hooks/usePosts';
 
 interface PostCardProps {
   post: Post;
-  onLike?: () => void;
   onComment?: () => void;
   onShare?: () => void;
   onUserClick?: () => void;
@@ -14,17 +14,37 @@ interface PostCardProps {
 
 export const PostCard: React.FC<PostCardProps> = ({
   post,
-  onLike,
   onComment,
   onShare,
   onUserClick,
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(post.likes);
 
-  const handleLike = () => {
-    setIsLiked(!isLiked);
-    onLike?.();
+  const likeMutation = useLikePost();
+  const unlikeMutation = useUnlikePost();
+
+  const handleLike = async () => {
+    const wasLiked = isLiked;
+    const previousCount = likesCount;
+
+    // Optimistic update
+    setIsLiked(!wasLiked);
+    setLikesCount(wasLiked ? likesCount - 1 : likesCount + 1);
+
+    try {
+      if (wasLiked) {
+        await unlikeMutation.mutateAsync(post.postId);
+      } else {
+        await likeMutation.mutateAsync(post.postId);
+      }
+    } catch (error) {
+      // Revert on error
+      setIsLiked(wasLiked);
+      setLikesCount(previousCount);
+      console.error('Error toggling like:', error);
+    }
   };
 
   const formatTimestamp = (date: Date) => {
@@ -163,7 +183,7 @@ export const PostCard: React.FC<PostCardProps> = ({
       {/* Likes Count */}
       <div className="px-4 pb-2">
         <p className="font-semibold text-sm">
-          {post.likes.toLocaleString()} likes
+          {likesCount.toLocaleString()} likes
         </p>
       </div>
 

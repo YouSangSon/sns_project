@@ -121,7 +121,6 @@ export default function FeedPage() {
               <PostCard
                 key={post.postId}
                 post={post}
-                onLike={() => console.log('Like:', post.postId)}
                 onComment={() => console.log('Comment:', post.postId)}
                 onShare={() => console.log('Share:', post.postId)}
                 onUserClick={() => console.log('User:', post.userId)}

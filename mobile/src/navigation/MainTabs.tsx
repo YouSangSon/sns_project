@@ -4,6 +4,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { MainTabParamList } from './types';
 import { COLORS } from '../constants';
 
+// Screens
+import FeedScreen from '../screens/feed/FeedScreen';
+
 // Placeholder screens (will be implemented later)
 import { View, Text, StyleSheet } from 'react-native';
 
@@ -13,7 +16,6 @@ const PlaceholderScreen = ({ title }: { title: string }) => (
   </View>
 );
 
-const HomeScreen = () => <PlaceholderScreen title="Home Feed" />;
 const SearchScreen = () => <PlaceholderScreen title="Search" />;
 const CreatePostScreen = () => <PlaceholderScreen title="Create Post" />;
 const NotificationsScreen = () => <PlaceholderScreen title="Notifications" />;
@@ -60,7 +62,7 @@ export const MainTabs = () => {
         },
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Home" component={FeedScreen} />
       <Tab.Screen name="Search" component={SearchScreen} />
       <Tab.Screen name="CreatePost" component={CreatePostScreen} />
       <Tab.Screen name="Notifications" component={NotificationsScreen} />

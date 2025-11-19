@@ -6,6 +6,7 @@ import { COLORS } from '../constants';
 
 // Screens
 import FeedScreen from '../screens/feed/FeedScreen';
+import { CreatePostScreen } from '../screens/posts/CreatePostScreen';
 
 // Placeholder screens (will be implemented later)
 import { View, Text, StyleSheet } from 'react-native';
@@ -17,7 +18,6 @@ const PlaceholderScreen = ({ title }: { title: string }) => (
 );
 
 const SearchScreen = () => <PlaceholderScreen title="Search" />;
-const CreatePostScreen = () => <PlaceholderScreen title="Create Post" />;
 const NotificationsScreen = () => <PlaceholderScreen title="Notifications" />;
 const ProfileScreen = () => <PlaceholderScreen title="Profile" />;
 

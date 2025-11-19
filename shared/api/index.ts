@@ -7,3 +7,4 @@ export { bookmarksService, BookmarksService } from './bookmarks.service';
 export { notificationsService, NotificationsService } from './notifications.service';
 export { messagesService, MessagesService } from './messages.service';
 export { storiesService, StoriesService } from './stories.service';
+export { reelsService, ReelsService } from './reels.service';

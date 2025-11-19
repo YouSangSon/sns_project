@@ -31,7 +31,7 @@ export type RootStackParamList = {
   UserProfile: { userId: string };
   EditProfile: undefined;
   Messages: undefined;
-  Chat: { userId: string; conversationId?: string };
+  Chat: { conversationId: string };
   Stories: { userId: string };
   CreateStory: undefined;
 };

@@ -7,6 +7,11 @@ import { RootStackParamList } from './types';
 import { AuthStack } from './AuthStack';
 import { MainTabs } from './MainTabs';
 import { useAuthStore } from '../stores/authStore';
+import ConversationsScreen from '../screens/messages/ConversationsScreen';
+import ChatScreen from '../screens/messages/ChatScreen';
+import PostDetailScreen from '../screens/post/PostDetailScreen';
+import ProfileScreen from '../screens/profile/ProfileScreen';
+import EditProfileScreen from '../screens/profile/EditProfileScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -31,7 +36,14 @@ export const RootNavigator = () => {
         {!isAuthenticated ? (
           <Stack.Screen name="Auth" component={AuthStack} />
         ) : (
-          <Stack.Screen name="Main" component={MainTabs} />
+          <>
+            <Stack.Screen name="Main" component={MainTabs} />
+            <Stack.Screen name="PostDetail" component={PostDetailScreen} />
+            <Stack.Screen name="UserProfile" component={ProfileScreen} />
+            <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+            <Stack.Screen name="Messages" component={ConversationsScreen} />
+            <Stack.Screen name="Chat" component={ChatScreen} />
+          </>
         )}
       </Stack.Navigator>
     </NavigationContainer>

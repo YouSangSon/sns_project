@@ -5,3 +5,4 @@ export { postsService, PostsService } from './posts.service';
 export { commentsService, CommentsService } from './comments.service';
 export { bookmarksService, BookmarksService } from './bookmarks.service';
 export { notificationsService, NotificationsService } from './notifications.service';
+export { messagesService, MessagesService } from './messages.service';

@@ -12,6 +12,8 @@ import ChatScreen from '../screens/messages/ChatScreen';
 import PostDetailScreen from '../screens/post/PostDetailScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
 import EditProfileScreen from '../screens/profile/EditProfileScreen';
+import StoriesScreen from '../screens/stories/StoriesScreen';
+import CreateStoryScreen from '../screens/stories/CreateStoryScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -43,6 +45,8 @@ export const RootNavigator = () => {
             <Stack.Screen name="EditProfile" component={EditProfileScreen} />
             <Stack.Screen name="Messages" component={ConversationsScreen} />
             <Stack.Screen name="Chat" component={ChatScreen} />
+            <Stack.Screen name="Stories" component={StoriesScreen} />
+            <Stack.Screen name="CreateStory" component={CreateStoryScreen} />
           </>
         )}
       </Stack.Navigator>

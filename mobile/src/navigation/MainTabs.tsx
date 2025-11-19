@@ -8,6 +8,7 @@ import { COLORS } from '../constants';
 import FeedScreen from '../screens/feed/FeedScreen';
 import { CreatePostScreen } from '../screens/posts/CreatePostScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
+import SearchScreen from '../screens/search/SearchScreen';
 
 // Placeholder screens (will be implemented later)
 import { View, Text, StyleSheet } from 'react-native';
@@ -18,7 +19,6 @@ const PlaceholderScreen = ({ title }: { title: string }) => (
   </View>
 );
 
-const SearchScreen = () => <PlaceholderScreen title="Search" />;
 const NotificationsScreen = () => <PlaceholderScreen title="Notifications" />;
 
 const Tab = createBottomTabNavigator<MainTabParamList>();

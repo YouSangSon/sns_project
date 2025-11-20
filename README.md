@@ -1,735 +1,604 @@
-# SNS App - Instagram-Style Social Media Application
+# SNS App - Modern Social Media Platform
 
-Flutter로 구현한 **크로스 플랫폼** 소셜 네트워크 서비스 애플리케이션입니다.
+React Native와 Next.js로 구현한 **풀스택 소셜 네트워크 서비스** 애플리케이션입니다.
+
+## 🏗️ 아키텍처
+
+- **Mobile**: React Native (Expo) + TypeScript
+- **Web**: Next.js 14 (App Router) + TypeScript
+- **Backend**: Kotlin + Spring Boot 3 REST API ([YouSangSon/rest_server](https://github.com/YouSangSon/rest_server))
+- **State Management**: React Query (@tanstack/react-query) + Zustand
+- **Shared Layer**: TypeScript types, API services, constants
 
 ## 🌐 지원 플랫폼
-- ✅ **웹** (Chrome, Safari, Edge, Firefox)
-- ✅ **Android** (API 21+)
-- ✅ **iOS** (iOS 12.0+)
+
+- ✅ **Web** (Chrome, Safari, Edge, Firefox) - Next.js
+- ✅ **Android** (API 21+) - React Native
+- ✅ **iOS** (iOS 13.0+) - React Native
 - ✅ **반응형 디자인** (모바일, 태블릿, 데스크톱)
 
 ## 📱 주요 기능
 
 ### ✅ 구현 완료
+
+#### 핵심 SNS 기능
 - **사용자 인증**
   - 이메일/비밀번호 회원가입 및 로그인
-  - Google 소셜 로그인
-  - 프로필 설정
+  - JWT 기반 인증
+  - 자동 토큰 갱신
+  - 프로필 설정 및 편집
 
 - **홈 피드**
   - 팔로우한 사용자들의 게시물 타임라인
-  - 스토리 서클 (상단 수평 스크롤)
   - 무한 스크롤
-  - 새로고침 기능
+  - Pull to Refresh
+  - React Query 기반 실시간 업데이트
 
 - **게시물 관리**
   - 사진 업로드 (최대 10장)
   - 캡션 작성
-  - 위치 태그
-  - 해시태그 자동 추출
-  - 게시물 삭제
+  - 해시태그 지원
+  - 게시물 수정/삭제
+  - 이미지 미리보기 및 슬라이더
 
 - **상호작용**
-  - 좋아요/좋아요 취소
-  - 댓글 작성 및 조회
+  - 좋아요/좋아요 취소 (Optimistic UI)
+  - 댓글 작성, 수정, 삭제
+  - 대댓글 (답글) 기능
   - 게시물 상세 보기
+  - 좋아요 목록 조회
 
 - **프로필**
   - 사용자 프로필 조회
-  - 게시물 그리드 뷰
+  - 게시물 그리드 뷰 (3열)
   - 팔로워/팔로잉 통계
   - 프로필 편집 (사진, 이름, 소개)
+  - 내 프로필 / 다른 사용자 프로필
 
 - **검색 및 탐색**
-  - 사용자 검색
-  - 탐색 그리드
+  - 사용자 검색 (디바운싱)
+  - 실시간 검색 결과
+  - 탐색 피드
 
 - **팔로우 시스템**
   - 팔로우/언팔로우
-  - 팔로워/팔로잉 수 표시
+  - 팔로워/팔로잉 수 자동 업데이트
+  - 팔로우 상태 추적
 
-- **스토리** ⭐ NEW!
-  - 24시간 제한 스토리
-  - 스토리 생성 (카메라 촬영)
-  - 스토리 뷰어 (제스처 네비게이션)
-  - 스토리 조회수 추적
-  - 자동 진행 및 프로그레스 바
+- **북마크 (Bookmarks)** ⭐
+  - 게시물 북마크 저장
+  - 릴스 북마크 저장
+  - 타입별 필터링 (Posts/Reels)
+  - 3열 그리드 레이아웃
+  - 북마크 삭제 (롱 프레스 / 호버)
+  - 무한 스크롤
 
-- **다이렉트 메시지 (DM)** ⭐ NEW!
-  - 실시간 1:1 채팅
+- **알림 (Notifications)** ⭐
+  - 실시간 알림 피드
+  - 좋아요 알림
+  - 댓글 알림
+  - 팔로우 알림
+  - 멘션 알림
+  - 읽음/읽지 않음 상태
+  - 30초마다 자동 갱신
+  - 알림 타입별 아이콘
+
+- **다이렉트 메시지 (Messages)** ⭐
+  - 1:1 채팅
   - 텍스트 메시지
   - 이미지 공유
   - 읽음 상태 표시
   - 대화 목록 (최근 순)
+  - 읽지 않은 메시지 카운트
+  - 5초마다 자동 갱신
 
-- **알림 시스템** ⭐ NEW!
-  - 실시간 알림 스트림
-  - 좋아요 알림
-  - 댓글 알림
-  - 팔로우 알림
-  - 읽음/읽지 않음 상태
-  - 알림에서 바로 팔로우백
+- **스토리 (Stories)** ⭐
+  - 24시간 제한 스토리
+  - 스토리 생성 (이미지 선택)
+  - 스토리 뷰어 (풀스크린)
+  - 자동 진행 (5초)
+  - 진행률 바
+  - 터치/클릭 네비게이션 (이전/다음)
+  - 일시정지 기능
+  - 조회수 추적
 
-- **릴스 (Reels)** 🎬 NEW!
+- **릴스 (Reels)** 🎬
   - 짧은 세로 형태 비디오
-  - 카메라 녹화 및 갤러리 선택
-  - 세로 스와이프 네비게이션
-  - 좋아요, 댓글, 공유, 조회수
-  - 오디오/음악 추가
-  - 비디오 압축
+  - 세로 스크롤 피드
+  - 좋아요, 댓글, 공유
+  - 조회수 추적
+  - 비디오 플레이어 기본 구조
+  - 오디오 정보 표시
 
-- **라이브 스트리밍** 📡 NEW!
-  - Agora 기반 실시간 방송
-  - 시청자 수 실시간 추적
-  - 라이브 댓글 및 좋아요
-  - 방송 시작/종료
-  - 카메라/마이크 토글
+#### 투자 SNS (Investment Social Network) 📊
 
-- **쇼핑** 🛍️ NEW!
-  - 상품 브라우징 및 검색
-  - 카테고리별 필터링
-  - 상품 상세 정보
-  - 장바구니 기능
-  - 주문 생성 및 관리
-  - 리뷰 및 평점
+- **포트폴리오 관리**
+  - 포트폴리오 생성, 조회, 수정, 삭제
+  - 공개/비공개 설정
+  - 총 자산 가치 추적
+  - 수익률 계산
+  - 다중 통화 지원
 
-- **푸시 알림 (FCM)** 🔔 NEW!
-  - Firebase Cloud Messaging 통합
-  - 백그라운드/포그라운드 알림
-  - 로컬 알림
-  - 알림 클릭 시 딥 링킹
-  - 토픽 구독/해제
+- **자산 보유 (Holdings)**
+  - 보유 종목 추가/수정/삭제
+  - 주식, 암호화폐, ETF, 채권 지원
+  - 평균 단가 자동 계산
+  - 현재가 및 수익률 표시
+  - 자산 유형별 분류
 
-- **고급 편집 도구** ✨ NEW!
-  - 이미지 필터 (10종 이상)
-  - 비디오 필터
-  - 크롭, 회전, 리사이즈
-  - 밝기, 대비, 채도 조절
-  - 비디오 트리밍 및 병합
-  - 비디오에 오디오 추가
+- **거래 내역 (Trade History)**
+  - 매수/매도 거래 기록
+  - 거래 수수료 추적
+  - 거래 메모
+  - 포트폴리오별 거래 내역
+  - 무한 스크롤 지원
 
-- **투자 SNS (Investment Social Network)** 📊 NEW!
-  - **Phase 1: 핵심 인프라**
-    - 투자 포트폴리오 관리 (생성, 조회, 수정)
-    - 자산 보유 현황 (주식, 암호화폐, ETF 등)
-    - 거래 내역 추적 (매수/매도)
-    - 실시간 수익률 계산
-    - API 키 안전 저장 (SecureVault)
+- **관심종목 (Watchlist)**
+  - 관심 종목 추가/삭제
+  - 목표가 설정
+  - 실시간 가격 조회
+  - 자산 검색 기능
+  - 가격 알림 설정
 
-  - **Phase 2: 커뮤니티 & UI**
-    - 투자 아이디어 게시판
-    - 포트폴리오 공유 피드
-    - 투자 성과 인증
-    - 시장 분석 공유
-    - 투자 성향별 필터링
-    - 포트폴리오 분석 대시보드
+- **투자 포스트 (Investment Posts)**
+  - 투자 아이디어 공유
+  - Bullish/Bearish 투표
+  - 종목 태그
+  - 투자 심리 표시
+  - 좋아요 및 댓글
+  - 투자 포스트 피드
 
-  - **Phase 3: 실시간 & 고급 기능** ⭐
-    - **비동기/멀티Pod 환경 지원**
-      - Firestore Transaction 기반 동시성 제어
-      - WebSocket Connection Pooling
-      - 자동 재연결 & Heartbeat
-    - **실시간 가격 시스템**
-      - WebSocket 기반 실시간 주식/암호화폐 가격
-      - Finnhub & Binance 연동
-      - 실시간 가격 알림
-    - **종목 상세 페이지**
-      - Candlestick 차트
-      - LIVE 가격 업데이트
-      - 관심 종목 관리
-    - **투자 아이디어 상세**
-      - 커뮤니티 투표 (강세/약세)
-      - 실시간 투표 비율
-      - 댓글 시스템
-    - **투자 랭킹 리더보드**
-      - 전체/주간/인기 투자자 순위
-      - 수익률 기반 랭킹
-      - TOP 3 메달 시스템
+- **포트폴리오 소셜 기능**
+  - 포트폴리오 팔로우/언팔로우
+  - 포트폴리오 복사
+  - 공개 포트폴리오 피드
+  - 팔로워 수 추적
+  - 트렌딩 포트폴리오
 
-  - **Phase 4: 게시물 저장 & 북마크** ⭐ NEW!
-    - **북마크 시스템**
-      - 게시물, 투자 아이디어, 릴스 저장
-      - 북마크 카운트 자동 업데이트
-      - 타입별 필터링 (전체/일반/투자)
-    - **저장된 게시물 화면**
-      - 3탭 구조 그리드 뷰
-      - 롱프레스 옵션 메뉴
-      - 컨텐츠 타입 아이콘 배지
-    - **사용자 태그 모델**
-
-  - **Phase 5: 투자 알림 시스템** ⭐ NEW!
-    - **가격 알림 서비스**
-      - 실시간 가격 모니터링
-      - 목표가 도달 알림 (이상/이하/변동률)
-      - 자동 구독 관리
-      - 알림 후 자동 비활성화
-    - **워치리스트 모니터링**
-      - 사용자별 다중 종목 추적
-      - 백그라운드 가격 체크
-      - 알림 트리거 및 Notification 생성
-
-  - **Phase 6: 고급 분석 대시보드** ⭐ NEW!
-    - **포트폴리오 분석**
-      - 위험도 점수 (0-100)
-        - Concentration Risk (Herfindahl Index)
-        - Asset Type Risk (가중 평균)
-      - 다각화 점수
-        - 자산 유형 다양성
-        - 자산 개수
-        - 균형도
-      - Sharpe Ratio 계산
-      - 섹터 배분 분석
-    - **성과 지표**
-      - 리스크 레벨 (낮음/중간/높음/매우높음)
-      - 다각화 점수 (0-100)
-
-  - **Phase 7: 소셜 투자 기능** ⭐ NEW!
-    - **소셜 트레이딩**
-      - 포트폴리오 팔로우/언팔로우
-      - 팔로워 수 자동 업데이트
-      - 포트폴리오 복사 기능
-        - 자산 구성 복사
-        - 사용자별 수량 설정
-      - 트렌딩 포트폴리오 (팔로워 순)
-    - **포트폴리오 소셜 기능**
-      - followed_portfolios 추적
-      - copied_portfolios 기록
-
-  - **Phase 8: 최적화 & 완성** ⭐ NEW!
-    - **에러 핸들러**
-      - Firebase 에러 메시지 한글화
-      - 에러/성공/정보 SnackBar
-      - 로딩 다이얼로그
-      - 확인 다이얼로그
-      - 에러 로깅
-    - **사용자 경험 개선**
-      - 명확한 에러 메시지
-      - 로딩 상태 표시
-      - 위험 작업 확인 다이얼로그
-
-### 🚧 향후 구현 예정
-- 다국어 지원 (i18n)
-- 다크 모드 테마 완성
-- 오프라인 모드
-- 푸시 알림 고도화
-- 성능 모니터링 및 분석
+- **포트폴리오 분석**
+  - 자산 배분 분석
+  - 실시간 수익률
+  - 수익/손실 추적
+  - 포트폴리오 성과 히스토리
+  - 다각화 점수
 
 ## 🛠 기술 스택
 
-### Frontend
-- **Flutter** 3.x - 크로스 플랫폼 프레임워크
-- **Dart** - 프로그래밍 언어
-- **Riverpod** 2.4+ - 현대적인 상태 관리 (Provider에서 마이그레이션)
-- **GoRouter** - 선언적 라우팅
+### Frontend (Mobile)
+- **React Native** - Expo SDK 50+
+- **TypeScript** - 타입 안전성
+- **React Navigation** - Stack & Bottom Tabs
+- **React Query** - Server state management
+- **Zustand** - Client state management (with persistence)
+- **Axios** - HTTP client
+- **Expo Image Picker** - 이미지/비디오 선택
+- **AsyncStorage** - 로컬 저장소
 
-### Backend (하이브리드 지원)
-- **Firebase**
-  - Authentication - 사용자 인증
-  - Cloud Firestore - NoSQL 데이터베이스
-  - Storage - 파일 저장소
-- **Supabase** (선택사항)
-  - PostgreSQL - 관계형 데이터베이스
-  - Real-time subscriptions - 실시간 업데이트
-  - Row Level Security - 보안
+### Frontend (Web)
+- **Next.js 14** - App Router
+- **TypeScript**
+- **Tailwind CSS** - 스타일링
+- **React Query** - Server state management
+- **Zustand** - Client state management
+- **Axios** - HTTP client
+
+### Shared Layer
+- **TypeScript** - 공통 타입 정의
+- **Axios Interceptors** - JWT 인증, 에러 핸들링
+- **API Services** - 재사용 가능한 API 클라이언트
+
+### Backend
+- **Kotlin** - 프로그래밍 언어
+- **Spring Boot 3** - REST API 프레임워크
+- **PostgreSQL** - 관계형 데이터베이스
+- **JWT** - 인증 토큰
+- **REST API** - RESTful 아키텍처
 
 ### 주요 패키지
-```yaml
-dependencies:
-  # State Management
-  flutter_riverpod: ^2.4.9
-  riverpod_annotation: ^2.3.3
 
-  # Firebase
-  firebase_core: ^2.24.2
-  firebase_auth: ^4.15.3
-  cloud_firestore: ^4.13.6
-  firebase_storage: ^11.5.6
+```json
+{
+  "dependencies": {
+    // React & React Native
+    "react": "18.2.0",
+    "react-native": "0.73.x",
+    "expo": "~50.0.x",
 
-  # Supabase (Optional)
-  supabase_flutter: ^2.3.4
-  postgrest: ^2.1.1
+    // State Management
+    "@tanstack/react-query": "^5.x",
+    "zustand": "^4.x",
 
-  # UI
-  cached_network_image: ^3.3.0
-  google_fonts: ^6.1.0
+    // Navigation
+    "@react-navigation/native": "^6.x",
+    "@react-navigation/native-stack": "^6.x",
+    "@react-navigation/bottom-tabs": "^6.x",
 
-  # Image & Video
-  image_picker: ^1.0.5
-  video_player: ^2.8.1
+    // HTTP Client
+    "axios": "^1.x",
 
-  # Routing
-  go_router: ^12.1.3
+    // UI Components
+    "@expo/vector-icons": "^14.x",
+    "expo-image-picker": "~14.x",
 
-  # Investment & Charts
-  fl_chart: ^0.65.0              # Charts for portfolio
-  candlesticks: ^2.1.0            # Candlestick charts
-  web_socket_channel: ^2.4.0      # WebSocket for real-time prices
+    // Storage
+    "@react-native-async-storage/async-storage": "1.21.x",
 
-  # Security
-  flutter_secure_storage: ^9.0.0  # API key storage
-
-  # Utils
-  intl: ^0.18.1
-  timeago: ^3.6.0
-  uuid: ^4.2.1
+    // Next.js (Web)
+    "next": "14.x",
+    "tailwindcss": "^3.x"
+  }
+}
 ```
-
-### 아키텍처 특징
-- ✅ **Riverpod 상태 관리**: 타입 안전성과 테스트 용이성
-- ✅ **하이브리드 DB**: Firebase와 Supabase 동시 지원
-- ✅ **플랫폼 감지**: 웹/모바일 자동 감지 및 최적화
-- ✅ **실시간 동기화**: Firestore와 Supabase real-time
-- ✅ **오프라인 지원**: Firestore 캐싱
 
 ## 📁 프로젝트 구조
 
 ```
-lib/
-├── main.dart                            # 앱 진입점
-├── app.dart                             # 앱 루트 및 라우팅
-├── core/
-│   ├── config/
-│   │   └── supabase_config.dart         # Supabase 설정
-│   ├── constants/
-│   │   └── app_constants.dart           # 앱 상수
-│   ├── theme/
-│   │   └── app_theme.dart               # 테마 설정
-│   ├── utils/
-│   │   └── secure_vault.dart            # 🔐 API 키 안전 저장소
-│   └── widgets/
-├── models/
-│   ├── user_model.dart                  # 사용자 모델
-│   ├── post_model.dart                  # 게시물 모델
-│   ├── comment_model.dart               # 댓글 모델
-│   ├── story_model.dart                 # 스토리 모델
-│   ├── message_model.dart               # 메시지 모델
-│   ├── notification_model.dart          # 알림 모델
-│   └── investment/                      # 📊 투자 모델
-│       ├── investment_portfolio.dart    # 포트폴리오 모델
-│       ├── asset_holding.dart           # 자산 보유 모델
-│       ├── trade_history.dart           # 거래 내역 모델
-│       ├── investment_post.dart         # 투자 게시물 모델
-│       ├── investment_idea.dart         # 투자 아이디어 모델
-│       └── watchlist.dart               # 관심 종목 모델
-├── providers/                           # Riverpod Providers
-│   ├── auth_provider_riverpod.dart      # 인증 상태 관리
-│   ├── user_provider_riverpod.dart      # 사용자 상태 관리
-│   ├── post_provider_riverpod.dart      # 게시물 상태 관리
-│   ├── theme_provider_riverpod.dart     # 테마 상태 관리
-│   ├── story_provider_riverpod.dart     # 스토리 상태 관리
-│   ├── message_provider_riverpod.dart   # 메시지 상태 관리
-│   └── notification_provider_riverpod.dart  # 알림 상태 관리
-├── services/
-│   ├── auth_service.dart                # Firebase 인증 서비스
-│   ├── database_service.dart            # Firebase 데이터베이스 서비스
-│   ├── storage_service.dart             # Firebase 스토리지 서비스
-│   ├── supabase_service.dart            # Supabase 서비스
-│   ├── hybrid_database_service.dart     # 하이브리드 DB 서비스
-│   ├── investment_service.dart          # 📊 투자 서비스 (포트폴리오, 거래, 랭킹)
-│   └── realtime_price_service.dart      # 📈 실시간 가격 WebSocket 서비스
-├── screens/
-│   ├── auth/
-│   │   ├── login_screen.dart            # 로그인 화면
-│   │   └── signup_screen.dart           # 회원가입 화면
-│   ├── home/
-│   │   └── home_screen.dart             # 홈 (메인 네비게이션)
-│   ├── feed/
-│   │   └── feed_screen.dart             # 피드 화면
-│   ├── post/
-│   │   ├── create_post_screen.dart      # 게시물 작성
-│   │   └── post_detail_screen.dart      # 게시물 상세
-│   ├── profile/
-│   │   ├── profile_screen.dart          # 프로필 화면
-│   │   └── edit_profile_screen.dart     # 프로필 편집
-│   ├── search/
-│   │   └── search_screen.dart           # 검색 화면
-│   ├── stories/
-│   │   ├── create_story_screen.dart     # 스토리 생성
-│   │   └── stories_screen.dart          # 스토리 뷰어
-│   ├── messages/
-│   │   ├── messages_screen.dart         # 대화 목록
-│   │   └── chat_screen.dart             # 채팅 화면
-│   ├── notifications/
-│   │   └── notifications_screen.dart    # 알림 화면
-│   └── investment/                      # 📊 투자 화면
-│       ├── portfolio_screen.dart        # 포트폴리오 관리
-│       ├── trade_screen.dart            # 거래 화면
-│       ├── investment_feed_screen.dart  # 투자 피드
-│       ├── asset_detail_screen.dart     # 📈 종목 상세 (Candlestick 차트)
-│       ├── watchlist_screen.dart        # 관심 종목 관리
-│       ├── investment_post_detail_screen.dart  # 투자 아이디어 상세
-│       ├── leaderboard_screen.dart      # 🏆 투자 랭킹 리더보드
-│       └── portfolio_analytics_screen.dart  # 포트폴리오 분석
-└── widgets/
-    ├── post_card.dart                   # 게시물 카드 위젯
-    └── story_circle.dart                # 스토리 서클 위젯
+sns_project/
+├── mobile/                          # React Native 앱
+│   ├── src/
+│   │   ├── screens/                 # 화면 컴포넌트
+│   │   │   ├── auth/               # 인증 화면
+│   │   │   ├── feed/               # 피드 화면
+│   │   │   ├── post/               # 게시물 화면
+│   │   │   ├── profile/            # 프로필 화면
+│   │   │   ├── search/             # 검색 화면
+│   │   │   ├── messages/           # 메시지 화면
+│   │   │   ├── notifications/      # 알림 화면
+│   │   │   ├── stories/            # 스토리 화면
+│   │   │   ├── reels/              # 릴스 화면
+│   │   │   └── bookmarks/          # 북마크 화면
+│   │   ├── navigation/              # 네비게이션 설정
+│   │   │   ├── RootNavigator.tsx   # 루트 네비게이터
+│   │   │   ├── MainTabs.tsx        # 메인 탭 네비게이터
+│   │   │   └── types.ts            # 네비게이션 타입
+│   │   ├── hooks/                   # Custom React Hooks
+│   │   │   ├── usePosts.ts         # 게시물 hooks
+│   │   │   ├── useUsers.ts         # 사용자 hooks
+│   │   │   ├── useMessages.ts      # 메시지 hooks
+│   │   │   ├── useStories.ts       # 스토리 hooks
+│   │   │   ├── useReels.ts         # 릴스 hooks
+│   │   │   ├── usePortfolios.ts    # 포트폴리오 hooks
+│   │   │   └── useInvestment.ts    # 투자 hooks
+│   │   ├── stores/                  # Zustand stores
+│   │   │   └── authStore.ts        # 인증 상태
+│   │   ├── constants/               # 상수
+│   │   └── utils/                   # 유틸리티 함수
+│   ├── App.tsx                      # 앱 진입점
+│   └── package.json
+│
+├── web-app/                         # Next.js 웹 앱
+│   ├── app/                         # App Router
+│   │   ├── auth/                   # 인증 페이지
+│   │   ├── feed/                   # 피드 페이지
+│   │   ├── posts/                  # 게시물 페이지
+│   │   ├── profile/                # 프로필 페이지
+│   │   ├── messages/               # 메시지 페이지
+│   │   ├── notifications/          # 알림 페이지
+│   │   ├── stories/                # 스토리 페이지
+│   │   ├── reels/                  # 릴스 페이지
+│   │   └── bookmarks/              # 북마크 페이지
+│   ├── lib/
+│   │   ├── hooks/                  # Custom React Hooks (모바일과 동일)
+│   │   └── stores/                 # Zustand stores
+│   ├── components/                  # 재사용 컴포넌트
+│   └── package.json
+│
+└── shared/                          # 공유 레이어
+    ├── api/                         # API 서비스 클래스
+    │   ├── client.ts               # Axios 클라이언트 (Interceptors)
+    │   ├── auth.service.ts         # 인증 API
+    │   ├── users.service.ts        # 사용자 API
+    │   ├── posts.service.ts        # 게시물 API
+    │   ├── comments.service.ts     # 댓글 API
+    │   ├── messages.service.ts     # 메시지 API
+    │   ├── stories.service.ts      # 스토리 API
+    │   ├── reels.service.ts        # 릴스 API
+    │   ├── notifications.service.ts # 알림 API
+    │   ├── bookmarks.service.ts    # 북마크 API
+    │   ├── portfolios.service.ts   # 포트폴리오 API
+    │   ├── trades.service.ts       # 거래 API
+    │   ├── watchlist.service.ts    # 관심종목 API
+    │   └── investmentPosts.service.ts # 투자 포스트 API
+    ├── types/                       # TypeScript 타입 정의
+    │   ├── user.ts                 # 사용자 타입
+    │   ├── post.ts                 # 게시물 타입
+    │   ├── comment.ts              # 댓글 타입
+    │   ├── message.ts              # 메시지 타입
+    │   ├── story.ts                # 스토리 타입
+    │   ├── reel.ts                 # 릴스 타입
+    │   ├── notification.ts         # 알림 타입
+    │   ├── bookmark.ts             # 북마크 타입
+    │   ├── investment.ts           # 투자 타입
+    │   └── index.ts                # 타입 export
+    └── constants/
+        └── api.ts                  # API 엔드포인트 상수
 ```
 
 ## 🚀 시작하기
 
 ### 사전 준비
-- Flutter SDK 3.0 이상
-- Dart SDK 3.0 이상
+
+- Node.js 18+
+- npm 또는 yarn
+- Expo CLI (모바일 개발 시)
 - Android Studio / Xcode (모바일 개발 시)
-- Firebase 계정 (필수)
-- Supabase 계정 (선택사항)
+- 백엔드 API 서버 ([YouSangSon/rest_server](https://github.com/YouSangSon/rest_server))
 
 ### 1. 저장소 클론
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/YouSangSon/sns_project.git
 cd sns_project
 ```
 
 ### 2. 패키지 설치
 
+#### Mobile (React Native)
 ```bash
-flutter pub get
+cd mobile
+npm install
 ```
 
-### 3. Firebase 설정 (필수)
+#### Web (Next.js)
+```bash
+cd web-app
+npm install
+```
 
-**중요:** Firebase 설정이 필수입니다. 자세한 내용은 [FIREBASE_SETUP.md](FIREBASE_SETUP.md)를 참조하세요.
+### 3. 환경 변수 설정
 
-간단 요약:
-1. [Firebase Console](https://console.firebase.google.com/)에서 프로젝트 생성
-2. 웹 앱 추가 (웹 지원용)
-3. Android 앱 추가 및 `google-services.json` 다운로드 → `android/app/` 에 배치
-4. iOS 앱 추가 및 `GoogleService-Info.plist` 다운로드 → `ios/Runner/` 에 배치
-5. Authentication, Firestore, Storage 활성화
+#### Mobile (.env)
+```env
+API_BASE_URL=http://localhost:8080
+```
 
-### 4. Supabase 설정 (선택사항)
+#### Web (.env.local)
+```env
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+```
 
-Supabase를 사용하려면 [SUPABASE_SETUP.md](SUPABASE_SETUP.md)를 참조하세요.
+### 4. 백엔드 API 서버 실행
 
-PostgreSQL의 강력한 쿼리와 관계형 데이터베이스를 원한다면 Supabase를 추가하세요!
+백엔드 REST API 서버를 먼저 실행해야 합니다:
+```bash
+# https://github.com/YouSangSon/rest_server 참조
+cd rest_server
+./gradlew bootRun
+```
 
 ### 5. 앱 실행
 
-#### 웹에서 실행
+#### Mobile (React Native)
 ```bash
-flutter run -d chrome
-# 또는
-flutter run -d edge
+cd mobile
+
+# iOS 시뮬레이터 (macOS only)
+npm run ios
+
+# Android 에뮬레이터
+npm run android
+
+# Expo Go 앱으로 실행
+npm start
 ```
 
-#### 모바일에서 실행
+#### Web (Next.js)
 ```bash
-# Android
-flutter run -d android
-
-# iOS (macOS only)
-cd ios && pod install && cd ..
-flutter run -d ios
+cd web-app
+npm run dev
 ```
 
-#### 빌드
+브라우저에서 http://localhost:3000 접속
+
+### 6. 빌드
+
+#### Mobile
 ```bash
-# 웹 빌드
-flutter build web --release
+cd mobile
 
-# Android APK
-flutter build apk --release
+# Development build
+npx expo prebuild
+npx expo run:ios
+npx expo run:android
 
-# iOS (macOS only)
-flutter build ios --release
+# Production build
+eas build --platform ios
+eas build --platform android
 ```
 
-## 🗄 데이터베이스 구조
-
-### Firestore Collections
-
-```
-users/
-  {userId}/
-    - uid: string
-    - email: string
-    - username: string
-    - displayName: string
-    - photoUrl: string
-    - bio: string
-    - followers: number
-    - following: number
-    - posts: number
-    - hasPublicPortfolio: boolean      # 📊 투자 랭킹용
-    - createdAt: timestamp
-
-posts/
-  {postId}/
-    - postId: string
-    - userId: string
-    - username: string
-    - userPhotoUrl: string
-    - imageUrls: array<string>
-    - caption: string
-    - location: string
-    - hashtags: array<string>
-    - likes: number
-    - comments: number
-    - createdAt: timestamp
-
-comments/
-  {commentId}/
-    - commentId: string
-    - postId: string
-    - userId: string
-    - username: string
-    - userPhotoUrl: string
-    - text: string
-    - likes: number
-    - parentCommentId: string          # 답글 기능
-    - repliesCount: number
-    - createdAt: timestamp
-
-likes/
-  {likeId}/
-    - postId: string
-    - userId: string
-    - createdAt: timestamp
-
-follows/
-  {followId}/
-    - followerId: string
-    - followingId: string
-    - createdAt: timestamp
-
-# 📊 투자 SNS Collections
-
-investment_portfolios/
-  {portfolioId}/
-    - portfolioId: string
-    - userId: string
-    - name: string
-    - description: string
-    - totalValue: number               # 총 자산 가치
-    - totalCost: number                # 총 투자 금액
-    - totalReturn: number              # 총 수익
-    - returnPercentage: number         # 수익률 (%)
-    - isPublic: boolean                # 공개 여부
-    - createdAt: timestamp
-    - updatedAt: timestamp
-
-asset_holdings/
-  {holdingId}/
-    - holdingId: string
-    - portfolioId: string
-    - userId: string
-    - assetSymbol: string              # 종목 심볼 (AAPL, BTC)
-    - assetName: string
-    - assetType: string                # stock/crypto/etf
-    - quantity: number
-    - averagePrice: number
-    - currentPrice: number
-    - totalValue: number
-    - unrealizedGain: number
-    - unrealizedGainPercent: number
-    - createdAt: timestamp
-    - updatedAt: timestamp
-
-trade_history/
-  {tradeId}/
-    - tradeId: string
-    - portfolioId: string
-    - userId: string
-    - assetSymbol: string
-    - assetName: string
-    - tradeType: string                # buy/sell
-    - quantity: number
-    - price: number
-    - totalAmount: number
-    - fee: number
-    - notes: string
-    - executedAt: timestamp
-
-investment_posts/
-  {postId}/
-    - postId: string
-    - userId: string
-    - username: string
-    - userPhotoUrl: string
-    - postType: string                 # idea/performance/trade/analysis
-    - content: string
-    - relatedAssets: array<string>
-    - sentiment: string                # bullish/bearish/neutral
-    - targetPrice: number
-    - timeHorizon: string              # short/medium/long
-    - hashtags: array<string>
-    - imageUrls: array<string>
-    - likes: number
-    - comments: number
-    - bookmarks: number
-    - bullishCount: number             # 강세 투표
-    - bearishCount: number             # 약세 투표
-    - createdAt: timestamp
-    - updatedAt: timestamp
-
-post_likes/                            # 🔒 Transaction용 별도 추적
-  {postId}_{userId}/
-    - postId: string
-    - userId: string
-    - likedAt: timestamp
-
-post_votes/                            # 🔒 Transaction용 투표 추적
-  {postId}_{userId}/
-    - postId: string
-    - userId: string
-    - isBullish: boolean
-    - votedAt: timestamp
-
-watchlists/
-  {watchlistId}/
-    - watchlistId: string
-    - userId: string
-    - assetSymbol: string
-    - assetName: string
-    - assetType: string
-    - addedPrice: number
-    - targetPrice: number              # 알림용
-    - alertEnabled: boolean
-    - alertCondition: string           # above/below/change
-    - alertTriggered: boolean          # Phase 5: 알림 트리거됨
-    - alertTriggeredAt: timestamp      # Phase 5: 알림 트리거 시간
-    - alertTriggeredPrice: number      # Phase 5: 알림 트리거 가격
-    - addedAt: timestamp
-    - updatedAt: timestamp
-
-# 📊 Phase 4-8 Collections
-
-bookmarks/                             # Phase 4: 북마크
-  {bookmarkId}/
-    - bookmarkId: string
-    - userId: string
-    - contentId: string                # postId, investmentPostId, reelId
-    - type: string                     # post/investment_post/reel
-    - contentPreview: string           # 캐시된 미리보기
-    - contentImageUrl: string
-    - authorUsername: string
-    - authorPhotoUrl: string
-    - createdAt: timestamp
-
-followed_portfolios/                   # Phase 7: 포트폴리오 팔로우
-  {followId}/
-    - userId: string
-    - portfolioId: string
-    - followedAt: timestamp
-
-copied_portfolios/                     # Phase 7: 포트폴리오 복사 추적
-  {copyId}/
-    - userId: string
-    - sourcePortfolioId: string
-    - newPortfolioId: string
-    - copiedAt: timestamp
-```
-
-## 🎨 디자인
-
-- **테마**: Light & Dark Mode 지원
-- **컬러**: Instagram 스타일 그라데이션
-- **폰트**: Google Fonts (Roboto)
-- **UI/UX**: Material Design 3
-
-## 🔧 개발 도구
-
+#### Web
 ```bash
-# 빌드
-flutter build apk          # Android APK
-flutter build ios          # iOS
-flutter build web          # Web
-
-# 분석
-flutter analyze
-
-# 테스트
-flutter test
-
-# 코드 포맷팅
-dart format .
+cd web-app
+npm run build
+npm start
 ```
 
-## 📝 주요 파일 설명
+## 🔑 주요 기능 상세
 
-### main.dart
-- 앱 진입점
-- Firebase 초기화
-- Supabase 초기화 (선택사항)
-- ProviderScope 설정
-- 플랫폼 감지 (웹/모바일)
+### React Query 패턴
 
-### app.dart
-- 라우팅 설정 (GoRouter)
-- 테마 설정 (라이트/다크 모드)
-- 인증 상태에 따른 리다이렉션
+모든 서버 상태는 React Query로 관리됩니다:
 
-### services/
-- **auth_service.dart**: Firebase Authentication 래퍼
-- **database_service.dart**: Firestore CRUD 작업
-- **storage_service.dart**: Firebase Storage 이미지 업로드
-- **supabase_service.dart**: Supabase PostgreSQL 작업
-- **hybrid_database_service.dart**: Firebase + Supabase 하이브리드
+```typescript
+// useInfiniteQuery를 사용한 무한 스크롤
+export const useFeed = (params?: PaginationParams) => {
+  return useInfiniteQuery({
+    queryKey: POST_KEYS.feed(params),
+    queryFn: ({ pageParam = 1 }) =>
+      postsService.getFeed({ ...params, page: pageParam }),
+    getNextPageParam: (lastPage, allPages) => {
+      return lastPage.hasMore ? allPages.length + 1 : undefined;
+    },
+    initialPageParam: 1,
+  });
+};
 
-### providers/
-- **Riverpod** 패턴을 사용한 상태 관리
-- **StateNotifier**: 변경 가능한 상태 관리
-- **FutureProvider**: 비동기 데이터 로딩
-- **StreamProvider**: 실시간 데이터 스트림
-- **Provider.family**: 매개변수화된 provider
+// useMutation을 사용한 Optimistic UI
+export const useLikePost = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (postId: string) => postsService.likePost(postId),
+    onSuccess: (_, postId) => {
+      queryClient.invalidateQueries({
+        queryKey: POST_KEYS.detail(postId),
+      });
+    },
+  });
+};
+```
+
+### Zustand 상태 관리
+
+인증 상태는 Zustand로 관리하고 AsyncStorage에 persist:
+
+```typescript
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      token: null,
+      user: null,
+      isAuthenticated: false,
+
+      login: (token: string, user: User) => {
+        apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        set({ token, user, isAuthenticated: true });
+      },
+
+      logout: () => {
+        delete apiClient.defaults.headers.common['Authorization'];
+        set({ token: null, user: null, isAuthenticated: false });
+      },
+    }),
+    {
+      name: 'auth-storage',
+    }
+  )
+);
+```
+
+### 공유 API 서비스
+
+모든 API 호출은 shared/api 레이어를 통해 처리:
+
+```typescript
+// shared/api/posts.service.ts
+export class PostsService {
+  async getFeed(params?: PaginationParams): Promise<PaginatedResponse<Post>> {
+    return apiClient.get<PaginatedResponse<Post>>(
+      API_ENDPOINTS.POSTS.FEED,
+      { params }
+    );
+  }
+
+  async createPost(data: CreatePostDto): Promise<Post> {
+    return apiClient.post<Post>(API_ENDPOINTS.POSTS.BASE, data);
+  }
+}
+
+export const postsService = new PostsService();
+```
+
+## 📡 API 엔드포인트
+
+백엔드 API는 REST API로 구현되어 있습니다:
+
+- `POST /api/v1/auth/login` - 로그인
+- `POST /api/v1/auth/register` - 회원가입
+- `GET /api/v1/posts/feed` - 피드 조회
+- `POST /api/v1/posts` - 게시물 생성
+- `GET /api/v1/users/{id}` - 사용자 프로필
+- `POST /api/v1/messages` - 메시지 전송
+- `GET /api/v1/notifications` - 알림 조회
+- `POST /api/v1/investment/portfolios` - 포트폴리오 생성
+
+전체 API 문서는 백엔드 저장소를 참조하세요.
+
+## 🎨 디자인 시스템
+
+### Mobile (React Native)
+- **테마**: Instagram 스타일
+- **컬러**:
+  - Primary: #0095f6 (Instagram Blue)
+  - Like: #ff3b5c (Red)
+  - Text: #262626
+  - Border: #dbdbdb
+- **폰트**: System fonts (San Francisco / Roboto)
+- **UI 패턴**: Bottom Tabs, Stack Navigation
+
+### Web (Next.js)
+- **CSS Framework**: Tailwind CSS
+- **컬러 스킴**: Mobile과 동일
+- **반응형**: Mobile-first design
+- **UI 패턴**: Client-side routing
 
 ## 🔐 보안
 
-### Firestore 보안 규칙
-- 읽기: 모든 사용자 가능
-- 쓰기: 인증된 사용자만
-- 수정/삭제: 작성자만 가능
+- **JWT Authentication**: Access token + Refresh token
+- **Token Auto-refresh**: Axios interceptor로 자동 갱신
+- **Secure Storage**:
+  - Mobile: AsyncStorage (encrypted on iOS)
+  - Web: localStorage with encryption
+- **HTTPS**: Production 환경에서 필수
+- **XSS Protection**: Next.js built-in protection
+- **CSRF Protection**: Backend에서 처리
 
-### Storage 보안 규칙
-- 읽기: 모든 사용자 가능
-- 쓰기: 인증된 사용자만
+## 📊 성능 최적화
+
+- **React Query Caching**: 서버 상태 자동 캐싱
+- **Infinite Scroll**: 효율적인 페이지네이션
+- **Optimistic UI**: 즉각적인 사용자 피드백
+- **Image Optimization**: Next.js Image component
+- **Code Splitting**: Next.js automatic code splitting
+- **Lazy Loading**: React.lazy & Suspense
+
+## 🧪 테스트
+
+```bash
+# Mobile
+cd mobile
+npm test
+
+# Web
+cd web-app
+npm test
+```
+
+## 📝 개발 가이드
+
+### 새로운 기능 추가 시
+
+1. `shared/types/`에 타입 정의
+2. `shared/api/`에 서비스 클래스 생성
+3. `mobile/src/hooks/` 및 `web-app/lib/hooks/`에 React Query hooks 생성
+4. 화면 컴포넌트 구현 (mobile & web)
+5. Navigation 업데이트
+
+### 코드 컨벤션
+
+- TypeScript strict mode
+- ESLint + Prettier
+- Functional components + Hooks
+- Named exports (services, hooks)
+- Default export (screens, pages)
 
 ## 🐛 알려진 이슈
 
-1. **이미지 업로드 속도**: 큰 이미지는 업로드 시간이 오래 걸릴 수 있습니다.
-   - 해결 방법: 이미지 압축 구현 예정
-
-2. **피드 로딩**: 팔로우한 사용자가 많을 경우 로딩이 느릴 수 있습니다.
-   - 해결 방법: 페이지네이션 최적화 예정
+1. **비디오 재생**: Reels 기능은 기본 구조만 구현됨 (expo-av 필요)
+2. **이미지 업로드**: 큰 이미지는 압축 필요
+3. **실시간 기능**: WebSocket 미구현 (polling 방식 사용 중)
 
 ## 🚀 향후 계획
 
-1. **Phase 1** (✅ 완료)
-   - ✅ 기본 인증 시스템
-   - ✅ 게시물 CRUD
-   - ✅ 프로필 관리
-   - ✅ 팔로우 시스템
-
-2. **Phase 2** (✅ 완료)
-   - ✅ 스토리 기능
-   - ✅ 다이렉트 메시지
-   - ✅ 실시간 알림
-
-3. **Phase 3** (✅ 완료)
-   - ✅ 릴스 (짧은 비디오)
-     - 세로 스와이프 네비게이션
-     - 비디오 녹화 및 업로드
-     - 좋아요, 댓글, 공유
-     - 조회수 추적
-   - ✅ 라이브 스트리밍
-     - Agora 기반 실시간 스트리밍
-     - 시청자 수 추적
-     - 실시간 댓글 및 좋아요
-   - ✅ 쇼핑 기능
-     - 상품 카탈로그
-     - 장바구니
-     - 주문 관리
-     - 결제 통합 준비
-   - ✅ FCM 푸시 알림
-     - 백그라운드/포그라운드 알림
-     - 토픽 구독
-     - 딥 링킹
-   - ✅ 고급 필터 및 편집 도구
-     - 이미지 필터 (Grayscale, Sepia, Vintage 등)
-     - 비디오 필터 및 편집
-     - 크롭, 회전, 리사이즈
-     - 밝기, 대비, 채도 조절
+- [ ] WebSocket 기반 실시간 업데이트
+- [ ] 비디오 녹화 및 편집
+- [ ] 다크 모드 완성
+- [ ] 다국어 지원 (i18n)
+- [ ] E2E 테스트
+- [ ] Performance monitoring
+- [ ] PWA 지원
+- [ ] Push notifications (FCM)
+- [ ] Investment UI 화면 구현
 
 ## 📄 라이선스
 
@@ -751,10 +620,11 @@ dart format .
 
 ## 🙏 감사의 말
 
-- Flutter Team
-- Firebase Team
-- 모든 오픈소스 패키지 기여자들
+- React Native Team
+- Next.js Team
+- TanStack Query Team
+- 모든 오픈소스 기여자들
 
 ---
 
-Made with ❤️ using Flutter
+Made with ❤️ using React Native & Next.js

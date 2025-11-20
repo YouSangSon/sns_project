@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { messagesService } from '../../../shared/api';
-import type { CreateMessageDto, PaginationParams } from '../../../shared/types';
+import { messagesService } from '@shared/api';
+import type { CreateMessageDto, PaginationParams } from '@shared/types';
 
 // Query Keys
 export const MESSAGE_KEYS = {

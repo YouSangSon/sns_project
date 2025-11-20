@@ -17,7 +17,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuthStore } from '../../stores/authStore';
 import { useUserProfile, useUserPosts, useFollowUser, useUnfollowUser } from '../../hooks/useProfile';
 import { COLORS } from '../../constants';
-import type { Post } from '../../../../shared/types';
+import type { Post } from '@shared/types';
 import type { RootStackParamList } from '../../navigation/types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;

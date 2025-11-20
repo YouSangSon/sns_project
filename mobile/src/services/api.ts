@@ -4,12 +4,12 @@ export {
   authService,
   usersService,
   postsService,
-} from '../../../shared/api';
+} from '@shared/api';
 
-export { API_ENDPOINTS } from '../../../shared/constants/api';
+export { API_ENDPOINTS } from '@shared/constants/api';
 
 // Mobile-specific API initialization
-import { apiClient } from '../../../shared/api';
+import { apiClient } from '@shared/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_CONFIG, STORAGE_KEYS } from '../constants';
 

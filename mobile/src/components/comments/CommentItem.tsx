@@ -8,7 +8,7 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import type { Comment } from '../../../../shared/types';
+import type { Comment } from '@shared/types';
 import { COLORS } from '../../constants';
 import { useLikeComment, useUnlikeComment, useDeleteComment } from '../../hooks/useComments';
 import { useAuthStore } from '../../stores/authStore';

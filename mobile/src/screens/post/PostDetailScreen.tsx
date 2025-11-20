@@ -18,7 +18,7 @@ import { CommentItem } from '../../components/comments';
 import { usePost } from '../../hooks/usePosts';
 import { usePostComments, useCreateComment } from '../../hooks/useComments';
 import { COLORS } from '../../constants';
-import type { Comment } from '../../../../shared/types';
+import type { Comment } from '@shared/types';
 
 type PostDetailRouteProp = RouteProp<{ PostDetail: { postId: string } }, 'PostDetail'>;
 

@@ -13,7 +13,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useReelsFeed, useToggleLikeReel, useViewReel } from '../../hooks/useReels';
-import type { Reel } from '../../../../shared/types';
+import type { Reel } from '@shared/types';
 import type { RootStackParamList } from '../../navigation/types';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');

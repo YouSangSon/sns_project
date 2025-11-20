@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { notificationsService } from '../../../shared/api';
-import type { PaginationParams } from '../../../shared/types';
+import { notificationsService } from '@shared/api';
+import type { PaginationParams } from '@shared/types';
 
 // Query Keys
 export const NOTIFICATION_KEYS = {

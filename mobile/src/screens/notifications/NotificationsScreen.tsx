@@ -19,7 +19,7 @@ import {
   useMarkAllAsRead,
 } from '../../hooks/useNotifications';
 import { COLORS } from '../../constants';
-import type { Notification } from '../../../../shared/types';
+import type { Notification } from '@shared/types';
 import type { RootStackParamList } from '../../navigation/types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;

@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { bookmarksService } from '../../../shared/api';
-import type { CreateBookmarkDto, BookmarkType, PaginationParams } from '../../../shared/types';
+import { bookmarksService } from '@shared/api';
+import type { CreateBookmarkDto, BookmarkType, PaginationParams } from '@shared/types';
 
 // Query Keys
 export const BOOKMARK_KEYS = {

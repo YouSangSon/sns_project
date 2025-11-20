@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { reelsService } from '../../../shared/api';
-import type { CreateReelDto, UpdateReelDto, PaginationParams } from '../../../shared/types';
+import { reelsService } from '@shared/api';
+import type { CreateReelDto, UpdateReelDto, PaginationParams } from '@shared/types';
 
 // Query Keys
 export const REEL_KEYS = {

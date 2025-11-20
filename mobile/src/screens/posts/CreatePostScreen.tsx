@@ -15,7 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useImagePicker } from '../../hooks/useImagePicker';
 import { useCreatePost } from '../../hooks/usePosts';
-import type { CreatePostDto } from '../../../../shared/types';
+import type { CreatePostDto } from '@shared/types';
 
 export const CreatePostScreen = () => {
   const navigation = useNavigation();

@@ -13,7 +13,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useBookmarks, useDeleteBookmark } from '../../hooks/useBookmarks';
-import type { Bookmark } from '../../../../shared/types';
+import type { Bookmark } from '@shared/types';
 import type { RootStackParamList } from '../../navigation/types';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');

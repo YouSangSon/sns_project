@@ -17,11 +17,26 @@ interface AuthState {
   loadAuth: () => Promise<void>;
 }
 
+// Dev 환경용 더미 유저
+const DEV_USER: User = {
+  userId: 'dev-user-001',
+  username: 'devuser',
+  email: 'dev@example.com',
+  displayName: 'Dev User',
+  photoUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=dev',
+  bio: '개발 환경 테스트 유저입니다',
+  followerCount: 150,
+  followingCount: 200,
+  postCount: 42,
+  createdAt: new Date('2024-01-01'),
+  updatedAt: new Date(),
+};
+
 export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
-  token: null,
-  isAuthenticated: false,
-  isLoading: true,
+  user: __DEV__ ? DEV_USER : null,
+  token: __DEV__ ? 'dev-token-mock' : null,
+  isAuthenticated: __DEV__ ? true : false,
+  isLoading: __DEV__ ? false : true,
 
   setUser: (user) => set({ user, isAuthenticated: !!user }),
 
@@ -72,6 +87,17 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   loadAuth: async () => {
     try {
+      // Dev 환경에서는 더미 유저 자동 로그인
+      if (__DEV__) {
+        set({
+          user: DEV_USER,
+          token: 'dev-token-mock',
+          isAuthenticated: true,
+          isLoading: false,
+        });
+        return;
+      }
+
       const [token, userData] = await AsyncStorage.multiGet([
         STORAGE_KEYS.AUTH_TOKEN,
         STORAGE_KEYS.USER_DATA,

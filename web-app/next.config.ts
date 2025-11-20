@@ -11,9 +11,11 @@ const nextConfig: NextConfig = {
     return config;
   },
   // Turbopack 설정 (Next.js 16+)
-  turbopack: {
-    resolveAlias: {
-      '@shared': path.resolve(__dirname, '../shared'),
+  experimental: {
+    turbo: {
+      resolveAlias: {
+        '@shared': '../shared',
+      },
     },
   },
 };

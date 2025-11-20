@@ -1,0 +1,128 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.github/**'
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'skip-release')"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Get package versions
+        id: versions
+        run: |
+          WEB_VERSION=$(node -p "require('./web-app/package.json').version")
+          MOBILE_VERSION=$(node -p "require('./mobile/package.json').version")
+          echo "web_version=$WEB_VERSION" >> $GITHUB_OUTPUT
+          echo "mobile_version=$MOBILE_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Check if tag exists
+        id: check_tag
+        run: |
+          if git rev-parse "v${{ steps.versions.outputs.web_version }}" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate changelog
+        if: steps.check_tag.outputs.exists == 'false'
+        id: changelog
+        run: |
+          # Get commits since last tag
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"- %s (%h)" --no-merges)
+          else
+            COMMITS=$(git log ${LAST_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges)
+          fi
+
+          # Create changelog
+          CHANGELOG="## 📝 Changes
+
+          $COMMITS
+
+          ## 📦 Package Versions
+          - Web: v${{ steps.versions.outputs.web_version }}
+          - Mobile: v${{ steps.versions.outputs.mobile_version }}"
+
+          # Save to file
+          echo "$CHANGELOG" > CHANGELOG.txt
+
+      - name: Create Git tag
+        if: steps.check_tag.outputs.exists == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v${{ steps.versions.outputs.web_version }}" -m "Release v${{ steps.versions.outputs.web_version }}"
+          git push origin "v${{ steps.versions.outputs.web_version }}"
+
+      - name: Create GitHub Release
+        if: steps.check_tag.outputs.exists == 'false'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.versions.outputs.web_version }}
+          release_name: Release v${{ steps.versions.outputs.web_version }}
+          body_path: CHANGELOG.txt
+          draft: false
+          prerelease: false
+
+  notify-slack:
+    name: Notify Slack
+    runs-on: ubuntu-latest
+    needs: create-release
+    if: success() && secrets.SLACK_WEBHOOK_URL != ''
+
+    steps:
+      - name: Send Slack notification
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "🚀 New release deployed!",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "🚀 *New Release* \n Release created from main branch"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Commit:*\n${{ github.event.head_commit.message }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Author:*\n${{ github.event.head_commit.author.name }}"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK

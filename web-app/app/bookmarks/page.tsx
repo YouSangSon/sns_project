@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useAuthStore } from '../../lib/stores/authStore';
 import { useBookmarks, useDeleteBookmark } from '../../lib/hooks/useBookmarks';
 import { Loading } from '../../components/ui';
+import { AppLayout } from '../../components/layout';
 import type { Bookmark } from '@shared/types';
 
 export default function BookmarksPage() {
@@ -63,38 +64,24 @@ export default function BookmarksPage() {
 
   if (!isAuthenticated || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loading size="lg" />
-      </div>
+      <AppLayout>
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <Loading size="lg" />
+        </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-300 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <button
-            onClick={() => router.back()}
-            className="p-2 hover:bg-gray-100 rounded-full"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              />
-            </svg>
-          </button>
-          <h1 className="text-xl font-bold">Bookmarks</h1>
-          <div className="w-10" />
-        </div>
-      </header>
+    <AppLayout>
+      <div className="min-h-screen bg-gray-50">
+        <main className="max-w-4xl mx-auto px-4 py-8 pb-20 lg:pb-8">
+          {/* Header */}
+          <h1 className="text-2xl font-bold mb-6">Bookmarks</h1>
 
-      {/* Tabs */}
-      <div className="bg-white border-b border-gray-300 sticky top-[57px] z-10">
-        <div className="max-w-6xl mx-auto flex">
+          {/* Tabs */}
+          <div className="bg-white rounded-lg border border-gray-300 overflow-hidden mb-4">
+            <div className="flex border-b border-gray-300">
           <button
             onClick={() => setSelectedType('post')}
             className={`flex-1 flex items-center justify-center gap-2 py-3 border-b-2 transition-colors ${
@@ -127,15 +114,10 @@ export default function BookmarksPage() {
             </svg>
             <span className="font-semibold">Reels</span>
           </button>
-        </div>
-      </div>
+            </div>
 
-      {/* Main Content */}
-      <main
-        className="max-w-6xl mx-auto overflow-y-auto"
-        onScroll={handleScroll}
-        style={{ maxHeight: 'calc(100vh - 114px)' }}
-      >
+            {/* Bookmark Content */}
+            <div onScroll={handleScroll}>
         {bookmarks.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20">
             <svg className="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -243,7 +225,10 @@ export default function BookmarksPage() {
             )}
           </>
         )}
-      </main>
-    </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </AppLayout>
   );
 }

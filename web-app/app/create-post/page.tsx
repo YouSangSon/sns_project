@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useAuthStore } from '../../lib/stores/authStore';
 import { useCreatePost } from '../../lib/hooks/usePosts';
 import { Loading } from '../../components/ui';
+import { AppLayout } from '../../components/layout';
 import type { CreatePostDto } from '@shared/types';
 
 export default function CreatePostPage() {
@@ -97,40 +98,41 @@ export default function CreatePostPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loading size="lg" />
-      </div>
+      <AppLayout>
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <Loading size="lg" />
+        </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-300 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <button
-            onClick={handleCancel}
-            className="text-gray-700 hover:text-gray-900 font-semibold"
-          >
-            Cancel
-          </button>
-          <h1 className="text-xl font-bold">Create Post</h1>
-          <button
-            onClick={handlePost}
-            disabled={createPostMutation.isPending || selectedImages.length === 0}
-            className={`font-semibold px-4 py-2 rounded-lg ${
-              createPostMutation.isPending || selectedImages.length === 0
-                ? 'text-blue-300 cursor-not-allowed'
-                : 'text-blue-500 hover:text-blue-600'
-            }`}
-          >
-            {createPostMutation.isPending ? 'Posting...' : 'Post'}
-          </button>
-        </div>
-      </header>
+    <AppLayout>
+      <div className="min-h-screen bg-gray-50">
+        {/* Main Content */}
+        <main className="max-w-2xl mx-auto px-4 py-8 pb-20 lg:pb-8">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <button
+              onClick={handleCancel}
+              className="text-gray-700 hover:text-gray-900 font-semibold"
+            >
+              Cancel
+            </button>
+            <h1 className="text-2xl font-bold">Create Post</h1>
+            <button
+              onClick={handlePost}
+              disabled={createPostMutation.isPending || selectedImages.length === 0}
+              className={`font-semibold px-4 py-2 rounded-lg ${
+                createPostMutation.isPending || selectedImages.length === 0
+                  ? 'bg-blue-300 text-white cursor-not-allowed'
+                  : 'bg-blue-500 text-white hover:bg-blue-600'
+              }`}
+            >
+              {createPostMutation.isPending ? 'Posting...' : 'Post'}
+            </button>
+          </div>
 
-      {/* Main Content */}
-      <main className="max-w-2xl mx-auto px-4 py-8">
         <div className="bg-white rounded-lg border border-gray-300 p-6">
           {/* Image Selection */}
           <div className="mb-6">
@@ -234,7 +236,8 @@ export default function CreatePostPage() {
             />
           </div>
         </div>
-      </main>
-    </div>
+        </main>
+      </div>
+    </AppLayout>
   );
 }

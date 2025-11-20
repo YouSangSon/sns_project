@@ -588,6 +588,43 @@ npm test
 2. **이미지 업로드**: 큰 이미지는 압축 필요
 3. **실시간 기능**: WebSocket 미구현 (polling 방식 사용 중)
 
+## 🔄 CI/CD
+
+이 프로젝트는 **GitHub Actions**를 사용하여 자동 빌드, 테스트, 배포를 수행합니다.
+
+### 워크플로우
+
+- **Mobile Build** (`.github/workflows/mobile-build.yml`)
+  - Lint, TypeScript 체크, 테스트
+  - Android/iOS 프로덕션 빌드 (EAS Build)
+  - OTA 업데이트 자동 배포
+  - 스토어 자동 제출 (옵션)
+
+- **Web Deploy** (`.github/workflows/web-deploy.yml`)
+  - Lint, TypeScript 체크, 테스트
+  - Next.js 프로덕션 빌드
+  - Vercel 자동 배포
+  - Lighthouse 성능 체크
+
+- **PR Checks** (`.github/workflows/pr-checks.yml`)
+  - PR 제목 형식 검증 (Conventional Commits)
+  - 의존성 보안 취약점 검사
+  - 민감한 파일 체크
+  - 번들 사이즈 체크
+
+- **Release** (`.github/workflows/release.yml`)
+  - Git 태그 자동 생성
+  - GitHub Release 생성
+  - Changelog 자동 생성
+
+- **CodeQL Security** (`.github/workflows/codeql.yml`)
+  - 정적 코드 분석
+  - 보안 취약점 스캔
+
+### 배포 가이드
+
+자세한 배포 방법은 **[DEPLOYMENT.md](./DEPLOYMENT.md)** 문서를 참조하세요.
+
 ## 🚀 향후 계획
 
 - [ ] WebSocket 기반 실시간 업데이트

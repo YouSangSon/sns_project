@@ -14,12 +14,29 @@ interface AuthState {
   logout: () => void;
 }
 
+// Dev 환경용 더미 유저
+const DEV_USER: User = {
+  userId: 'dev-user-001',
+  username: 'devuser',
+  email: 'dev@example.com',
+  displayName: 'Dev User',
+  photoUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=dev',
+  bio: '개발 환경 테스트 유저입니다',
+  followerCount: 150,
+  followingCount: 200,
+  postCount: 42,
+  createdAt: new Date('2024-01-01'),
+  updatedAt: new Date(),
+};
+
+const isDevelopment = process.env.NODE_ENV === 'development';
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
-      user: null,
-      token: null,
-      isAuthenticated: false,
+      user: isDevelopment ? DEV_USER : null,
+      token: isDevelopment ? 'dev-token-mock' : null,
+      isAuthenticated: isDevelopment ? true : false,
 
       setUser: (user) => set({ user, isAuthenticated: !!user }),
 

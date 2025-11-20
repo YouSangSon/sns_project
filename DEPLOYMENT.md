@@ -639,148 +639,110 @@ const secretKey = process.env.SECRET_KEY;
 
 ## CI/CD 설정
 
-### GitHub Actions (권장)
+### GitHub Actions
 
-#### 모바일 앱 자동 빌드
+이 프로젝트는 GitHub Actions를 사용하여 자동 빌드, 테스트, 배포를 수행합니다.
 
-**.github/workflows/mobile-build.yml:**
-```yaml
-name: Mobile Build
+#### 워크플로우 파일 위치
 
-on:
-  push:
-    branches: [main]
-    paths:
-      - 'mobile/**'
-  pull_request:
-    branches: [main]
-    paths:
-      - 'mobile/**'
+모든 GitHub Actions 워크플로우는 `.github/workflows/` 디렉토리에 있습니다:
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
+1. **`mobile-build.yml`** - 모바일 앱 빌드 및 배포
+   - Lint, TypeScript 체크, 테스트
+   - Android/iOS 프로덕션 빌드
+   - OTA 업데이트 배포
+   - 스토어 자동 제출 (옵션)
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
+2. **`web-deploy.yml`** - 웹 앱 배포
+   - Lint, TypeScript 체크, 테스트
+   - Next.js 빌드
+   - Vercel/Netlify 배포
+   - Lighthouse 성능 체크
 
-      - name: Setup Expo
-        uses: expo/expo-github-action@v8
-        with:
-          expo-version: latest
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
+3. **`pr-checks.yml`** - Pull Request 검증
+   - PR 제목 형식 검증 (Conventional Commits)
+   - 의존성 보안 취약점 검사
+   - 민감한 파일 체크 (.env 등)
+   - 번들 사이즈 체크
 
-      - name: Install dependencies
-        working-directory: ./mobile
-        run: npm ci
+4. **`release.yml`** - 자동 릴리즈
+   - Git 태그 생성
+   - GitHub Release 생성
+   - Changelog 자동 생성
+   - Slack 알림 (옵션)
 
-      - name: Run tests
-        working-directory: ./mobile
-        run: npm test
+5. **`codeql.yml`** - 보안 스캔
+   - CodeQL 정적 분석
+   - 매주 월요일 자동 실행
 
-      - name: Build Android
-        if: github.ref == 'refs/heads/main'
-        working-directory: ./mobile
-        run: eas build --platform android --profile production --non-interactive
+#### GitHub Secrets 설정 가이드
 
-      - name: Build iOS
-        if: github.ref == 'refs/heads/main'
-        working-directory: ./mobile
-        run: eas build --platform ios --profile production --non-interactive
+GitHub 저장소 **Settings → Secrets and variables → Actions**에서 다음 시크릿을 추가하세요:
+
+##### 필수 Secrets
+
+**모바일 앱 관련:**
+- `EXPO_TOKEN`
+  - 설명: Expo 액세스 토큰
+  - 발급: https://expo.dev/accounts/[username]/settings/access-tokens
+  - 생성: "Create Token" → 이름 입력 → 토큰 복사
+
+**웹 앱 관련 (Vercel):**
+- `VERCEL_TOKEN`
+  - 설명: Vercel 인증 토큰
+  - 발급: https://vercel.com/account/tokens
+  - 생성: "Create" → 이름 입력 → 토큰 복사
+
+- `VERCEL_ORG_ID`
+  - 설명: Vercel 조직 ID
+  - 확인: 프로젝트 Settings → General → "Project ID" 섹션의 "Your ID"
+  - 또는 `.vercel/project.json` 파일의 `orgId` 값
+
+- `VERCEL_PROJECT_ID`
+  - 설명: Vercel 프로젝트 ID
+  - 확인: 프로젝트 Settings → General → "Project ID"
+  - 또는 `.vercel/project.json` 파일의 `projectId` 값
+
+**API 관련:**
+- `API_BASE_URL`
+  - 설명: 백엔드 API 서버 URL
+  - 예시: `https://api.yourdomain.com`
+  - 환경별로 다를 수 있음 (production/staging)
+
+##### 선택 Secrets
+
+**Netlify 사용 시:**
+- `NETLIFY_SITE_ID`: Netlify 사이트 ID
+- `NETLIFY_AUTH_TOKEN`: Netlify 인증 토큰
+
+**Slack 알림:**
+- `SLACK_WEBHOOK_URL`: Slack Incoming Webhook URL
+  - 발급: Slack Workspace → Apps → Incoming Webhooks 활성화
+
+**앱 스토어 자동 제출 (고급):**
+- `APPLE_ID`: Apple Developer 계정 이메일
+- `APPLE_APP_SPECIFIC_PASSWORD`: App-specific password
+- `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`: Google Play 서비스 계정 JSON (base64 인코딩)
+
+#### Secrets 추가 방법
+
+1. GitHub 저장소 페이지에서 **Settings** 탭 클릭
+2. 왼쪽 메뉴에서 **Secrets and variables → Actions** 클릭
+3. **New repository secret** 버튼 클릭
+4. Secret 이름과 값을 입력
+5. **Add secret** 버튼 클릭
+
+#### 워크플로우 활성화
+
+워크플로우 파일을 `main` 브랜치에 푸시하면 자동으로 활성화됩니다:
+
+```bash
+git add .github/workflows/
+git commit -m "ci: GitHub Actions 워크플로우 추가"
+git push origin main
 ```
 
-#### 웹 앱 자동 배포 (Vercel)
-
-**.github/workflows/web-deploy.yml:**
-```yaml
-name: Web Deploy
-
-on:
-  push:
-    branches: [main]
-    paths:
-      - 'web-app/**'
-  pull_request:
-    branches: [main]
-    paths:
-      - 'web-app/**'
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-
-      - name: Install dependencies
-        working-directory: ./web-app
-        run: npm ci
-
-      - name: Run tests
-        working-directory: ./web-app
-        run: npm test
-
-      - name: Build
-        working-directory: ./web-app
-        run: npm run build
-        env:
-          NEXT_PUBLIC_API_BASE_URL: ${{ secrets.API_BASE_URL }}
-
-      - name: Deploy to Vercel
-        if: github.ref == 'refs/heads/main'
-        uses: amondnet/vercel-action@v20
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          working-directory: ./web-app
-          vercel-args: '--prod'
-```
-
-#### Secrets 설정
-
-GitHub 저장소 Settings → Secrets and variables → Actions에서 추가:
-
-- `EXPO_TOKEN`: Expo access token
-- `VERCEL_TOKEN`: Vercel token
-- `VERCEL_ORG_ID`: Vercel organization ID
-- `VERCEL_PROJECT_ID`: Vercel project ID
-- `API_BASE_URL`: API 서버 URL
-
-### 자동 버전 태그 생성
-
-**.github/workflows/auto-tag.yml:**
-```yaml
-name: Auto Tag
-
-on:
-  push:
-    branches: [main]
-
-jobs:
-  tag:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Bump version and push tag
-        uses: anothrNick/github-tag-action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          WITH_V: true
-          DEFAULT_BUMP: patch
-```
+**Actions** 탭에서 워크플로우 실행 상태를 확인할 수 있습니다.
 
 ---
 

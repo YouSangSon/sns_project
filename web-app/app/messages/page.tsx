@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useAuthStore } from '../../lib/stores/authStore';
 import { useConversations } from '../../lib/hooks/useMessages';
 import { Loading } from '../../components/ui';
+import { AppLayout } from '../../components/layout';
 import type { Conversation } from '@shared/types';
 
 export default function MessagesPage() {
@@ -66,50 +67,34 @@ export default function MessagesPage() {
 
   if (!isAuthenticated || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loading size="lg" />
-      </div>
+      <AppLayout>
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <Loading size="lg" />
+        </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-300 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <button
-            onClick={() => router.back()}
-            className="p-2 hover:bg-gray-100 rounded-full"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              />
-            </svg>
-          </button>
-          <h1 className="text-xl font-bold">Messages</h1>
-          <button className="p-2 hover:bg-gray-100 rounded-full">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
-          </button>
-        </div>
-      </header>
+    <AppLayout>
+      <div className="min-h-screen bg-gray-50">
+        {/* Main Content */}
+        <main className="max-w-2xl mx-auto px-4 py-8 pb-20 lg:pb-8" onScroll={handleScroll}>
+          {/* Header */}
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-2xl font-bold">Messages</h1>
+            <button className="p-2 hover:bg-gray-100 rounded-lg">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+            </button>
+          </div>
 
-      {/* Main Content */}
-      <main
-        className="max-w-2xl mx-auto overflow-y-auto"
-        onScroll={handleScroll}
-        style={{ maxHeight: 'calc(100vh - 64px)' }}
-      >
         <div className="bg-white rounded-lg border border-gray-300 overflow-hidden">
           {conversations.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20">
@@ -197,8 +182,9 @@ export default function MessagesPage() {
               )}
             </>
           )}
-        </div>
-      </main>
-    </div>
+          </div>
+        </main>
+      </div>
+    </AppLayout>
   );
 }

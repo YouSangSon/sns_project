@@ -1,0 +1,114 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  validate-pr:
+    name: Validate PR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check PR title
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            chore
+            ci
+          requireScope: false
+
+  check-dependencies:
+    name: Check Dependencies
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Check for security vulnerabilities (web)
+        working-directory: ./web-app
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+      - name: Check for security vulnerabilities (mobile)
+        working-directory: ./mobile
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+  check-files:
+    name: Check Modified Files
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v40
+
+      - name: Check for sensitive files
+        run: |
+          echo "Changed files:"
+          echo "${{ steps.changed-files.outputs.all_changed_files }}"
+
+          # Check for .env files
+          if echo "${{ steps.changed-files.outputs.all_changed_files }}" | grep -q ".env"; then
+            echo "::error::⚠️ .env file detected in changes. Do not commit environment files!"
+            exit 1
+          fi
+
+          # Check for secrets
+          if echo "${{ steps.changed-files.outputs.all_changed_files }}" | grep -qE "(secret|password|credentials)"; then
+            echo "::warning::Files with 'secret', 'password', or 'credentials' in name detected. Please review carefully."
+          fi
+
+  size-check:
+    name: Bundle Size Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies (web)
+        working-directory: ./web-app
+        run: npm ci
+
+      - name: Build (web)
+        working-directory: ./web-app
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: Check bundle size
+        uses: andresz1/size-limit-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          skip_step: install
+          directory: ./web-app

@@ -8,3 +8,7 @@ export { notificationsService, NotificationsService } from './notifications.serv
 export { messagesService, MessagesService } from './messages.service';
 export { storiesService, StoriesService } from './stories.service';
 export { reelsService, ReelsService } from './reels.service';
+export { portfoliosService, PortfoliosService } from './portfolios.service';
+export { tradesService, TradesService } from './trades.service';
+export { watchlistService, WatchlistService } from './watchlist.service';
+export { investmentPostsService, InvestmentPostsService } from './investmentPosts.service';

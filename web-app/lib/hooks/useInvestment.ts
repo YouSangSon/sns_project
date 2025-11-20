@@ -2,7 +2,7 @@
 export * from './usePortfolios';
 
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { tradesService, watchlistService, investmentPostsService } from '../../../shared/api';
+import { tradesService, watchlistService, investmentPostsService } from '@shared/api';
 import type {
   CreateTradeDto,
   CreateWatchlistItemDto,
@@ -10,7 +10,7 @@ import type {
   CreateInvestmentPostDto,
   UpdateInvestmentPostDto,
   PaginationParams,
-} from '../../../shared/types';
+} from '@shared/types';
 
 // Trades Query Keys
 export const TRADE_KEYS = {

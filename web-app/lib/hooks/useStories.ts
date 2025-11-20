@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { storiesService } from '../../../shared/api';
-import type { CreateStoryDto, PaginationParams } from '../../../shared/types';
+import { storiesService } from '@shared/api';
+import type { CreateStoryDto, PaginationParams } from '@shared/types';
 
 // Query Keys
 export const STORY_KEYS = {

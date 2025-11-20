@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
-import { usersService } from '../../../shared/api';
-import type { UpdateUserDto, PaginationParams } from '../../../shared/types';
+import { usersService } from '@shared/api';
+import type { UpdateUserDto, PaginationParams } from '@shared/types';
 
 // Query Keys
 export const PROFILE_KEYS = {

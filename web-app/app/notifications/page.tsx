@@ -10,7 +10,7 @@ import {
   useMarkAllAsRead,
 } from '../../lib/hooks/useNotifications';
 import { Loading } from '../../components/ui';
-import type { Notification } from '../../../shared/types';
+import type { Notification } from '@shared/types';
 
 export default function NotificationsPage() {
   const router = useRouter();

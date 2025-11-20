@@ -5,10 +5,10 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../../lib/stores/authStore';
-import { usersService } from '../../../shared/api';
+import { usersService } from '@shared/api';
 import { Loading } from '../../components/ui';
 import { useDebounce } from '../../lib/hooks/useDebounce';
-import type { User } from '../../../shared/types';
+import type { User } from '@shared/types';
 
 export default function SearchPage() {
   const router = useRouter();

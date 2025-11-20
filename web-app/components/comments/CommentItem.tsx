@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import type { Comment } from '../../../shared/types';
+import type { Comment } from '@shared/types';
 import { useLikeComment, useUnlikeComment, useDeleteComment } from '../../lib/hooks/useComments';
 import { useAuthStore } from '../../lib/stores/authStore';
 

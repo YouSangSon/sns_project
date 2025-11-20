@@ -1291,9 +1291,258 @@ Response: 200 OK
 
 ---
 
-## 17. File Upload
+## 17. Stories
 
-### 17.1 이미지/비디오 업로드
+### 17.1 스토리 생성
+```http
+POST /stories
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "mediaUrl": "https://...",
+  "mediaType": "image",
+  "caption": "Check this out!",
+  "backgroundColor": "#000000",
+  "duration": 5
+}
+
+Response: 201 Created
+{
+  "storyId": "story_id",
+  "createdAt": "2024-01-01T00:00:00Z",
+  "expiresAt": "2024-01-02T00:00:00Z"
+}
+```
+
+### 17.2 스토리 목록 조회 (팔로잉 중인 사용자)
+```http
+GET /stories?limit=20
+Authorization: Bearer <token>
+
+Response: 200 OK
+{
+  "stories": [
+    {
+      "userId": "user_id",
+      "username": "username",
+      "userPhotoUrl": "https://...",
+      "hasUnviewed": true,
+      "stories": [
+        {
+          "storyId": "story_id",
+          "userId": "user_id",
+          "mediaUrl": "https://...",
+          "mediaType": "image",
+          "caption": "Check this out!",
+          "backgroundColor": "#000000",
+          "duration": 5,
+          "viewCount": 10,
+          "hasViewed": false,
+          "createdAt": "2024-01-01T00:00:00Z",
+          "expiresAt": "2024-01-02T00:00:00Z"
+        }
+      ]
+    }
+  ]
+}
+```
+
+### 17.3 사용자의 스토리 조회
+```http
+GET /stories/:userId
+Authorization: Bearer <token>
+
+Response: 200 OK
+{
+  "userId": "user_id",
+  "username": "username",
+  "userPhotoUrl": "https://...",
+  "stories": [
+    {
+      "storyId": "story_id",
+      "mediaUrl": "https://...",
+      "mediaType": "image",
+      "caption": "...",
+      "duration": 5,
+      "viewCount": 10,
+      "hasViewed": false,
+      "createdAt": "2024-01-01T00:00:00Z",
+      "expiresAt": "2024-01-02T00:00:00Z"
+    }
+  ]
+}
+```
+
+### 17.4 스토리 조회 기록 추가
+```http
+POST /stories/:storyId/view
+Authorization: Bearer <token>
+
+Response: 200 OK
+{
+  "message": "Story view recorded"
+}
+```
+
+### 17.5 스토리 삭제
+```http
+DELETE /stories/:storyId
+Authorization: Bearer <token>
+
+Response: 200 OK
+{
+  "message": "Story deleted successfully"
+}
+```
+
+---
+
+## 18. Reels
+
+### 18.1 릴스 생성
+```http
+POST /reels
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "videoUrl": "https://...",
+  "thumbnailUrl": "https://...",
+  "caption": "Amazing content!",
+  "audioName": "Original Audio",
+  "duration": 30
+}
+
+Response: 201 Created
+{
+  "reelId": "reel_id",
+  "createdAt": "2024-01-01T00:00:00Z"
+}
+```
+
+### 18.2 릴스 피드 조회
+```http
+GET /reels/feed?limit=20&offset=0
+Authorization: Bearer <token>
+
+Response: 200 OK
+{
+  "reels": [
+    {
+      "reelId": "reel_id",
+      "userId": "user_id",
+      "username": "username",
+      "userPhotoUrl": "https://...",
+      "videoUrl": "https://...",
+      "thumbnailUrl": "https://...",
+      "caption": "Amazing content!",
+      "audioName": "Original Audio",
+      "duration": 30,
+      "likeCount": 1000,
+      "commentCount": 50,
+      "shareCount": 25,
+      "viewCount": 10000,
+      "isLiked": false,
+      "isBookmarked": false,
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "hasMore": true
+}
+```
+
+### 18.3 릴스 상세 조회
+```http
+GET /reels/:reelId
+Authorization: Bearer <token>
+
+Response: 200 OK
+{
+  "reelId": "reel_id",
+  "userId": "user_id",
+  "username": "username",
+  "userPhotoUrl": "https://...",
+  "videoUrl": "https://...",
+  "thumbnailUrl": "https://...",
+  "caption": "Amazing content!",
+  "audioName": "Original Audio",
+  "duration": 30,
+  "likeCount": 1000,
+  "commentCount": 50,
+  "shareCount": 25,
+  "viewCount": 10000,
+  "isLiked": false,
+  "isBookmarked": false,
+  "createdAt": "2024-01-01T00:00:00Z"
+}
+```
+
+### 18.4 사용자의 릴스 목록
+```http
+GET /users/:userId/reels?limit=20&offset=0
+Authorization: Bearer <token>
+
+Response: 200 OK
+{
+  "reels": [...],
+  "total": 50,
+  "hasMore": true
+}
+```
+
+### 18.5 릴스 삭제
+```http
+DELETE /reels/:reelId
+Authorization: Bearer <token>
+
+Response: 200 OK
+{
+  "message": "Reel deleted successfully"
+}
+```
+
+### 18.6 릴스 좋아요
+```http
+POST /reels/:reelId/like
+Authorization: Bearer <token>
+
+Response: 200 OK
+{
+  "message": "Liked successfully",
+  "likeCount": 1001
+}
+```
+
+### 18.7 릴스 좋아요 취소
+```http
+DELETE /reels/:reelId/like
+Authorization: Bearer <token>
+
+Response: 200 OK
+{
+  "message": "Unliked successfully",
+  "likeCount": 1000
+}
+```
+
+### 18.8 릴스 조회수 증가
+```http
+POST /reels/:reelId/view
+Authorization: Bearer <token>
+
+Response: 200 OK
+{
+  "message": "View recorded",
+  "viewCount": 10001
+}
+```
+
+---
+
+## 19. File Upload
+
+### 19.1 이미지/비디오 업로드
 ```http
 POST /upload
 Authorization: Bearer <token>

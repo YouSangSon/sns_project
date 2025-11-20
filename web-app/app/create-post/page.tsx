@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useAuthStore } from '../../lib/stores/authStore';
 import { useCreatePost } from '../../lib/hooks/usePosts';
 import { Loading } from '../../components/ui';
+import { AppLayout } from '../../components/layout';
 import type { CreatePostDto } from '@shared/types';
 
 export default function CreatePostPage() {

@@ -10,6 +10,7 @@ import {
   useMarkAllAsRead,
 } from '../../lib/hooks/useNotifications';
 import { Loading } from '../../components/ui';
+import { AppLayout } from '../../components/layout';
 import type { Notification } from '@shared/types';
 
 export default function NotificationsPage() {

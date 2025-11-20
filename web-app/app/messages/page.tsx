@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useAuthStore } from '../../lib/stores/authStore';
 import { useConversations } from '../../lib/hooks/useMessages';
 import { Loading } from '../../components/ui';
+import { AppLayout } from '../../components/layout';
 import type { Conversation } from '@shared/types';
 
 export default function MessagesPage() {

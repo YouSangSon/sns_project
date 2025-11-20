@@ -135,51 +135,34 @@ export default function NotificationsPage() {
 
   if (!isAuthenticated || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loading size="lg" />
-      </div>
+      <AppLayout>
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <Loading size="lg" />
+        </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-300 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <button
-            onClick={() => router.back()}
-            className="p-2 hover:bg-gray-100 rounded-full"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              />
-            </svg>
-          </button>
-          <h1 className="text-xl font-bold">Notifications</h1>
-          {notifications.some((n) => !n.isRead) && (
-            <button
-              onClick={handleMarkAllAsRead}
-              disabled={markAllAsReadMutation.isPending}
-              className="text-sm font-semibold text-blue-500 hover:text-blue-600"
-            >
-              Mark all read
-            </button>
-          )}
-          {!notifications.some((n) => !n.isRead) && <div className="w-24" />}
-        </div>
-      </header>
+    <AppLayout>
+      <div className="min-h-screen bg-gray-50">
+        {/* Main Content */}
+        <main className="max-w-2xl mx-auto px-4 py-8 pb-20 lg:pb-8" onScroll={handleScroll}>
+          {/* Header with Mark all read button */}
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-2xl font-bold">Notifications</h1>
+            {notifications.some((n) => !n.isRead) && (
+              <button
+                onClick={handleMarkAllAsRead}
+                disabled={markAllAsReadMutation.isPending}
+                className="text-sm font-semibold text-blue-500 hover:text-blue-600"
+              >
+                Mark all read
+              </button>
+            )}
+          </div>
 
-      {/* Main Content */}
-      <main
-        className="max-w-2xl mx-auto overflow-y-auto"
-        onScroll={handleScroll}
-        style={{ maxHeight: 'calc(100vh - 64px)' }}
-      >
-        <div className="bg-white rounded-lg border border-gray-300 overflow-hidden">
+          <div className="bg-white rounded-lg border border-gray-300 overflow-hidden">
           {notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20">
               <svg className="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -243,8 +226,9 @@ export default function NotificationsPage() {
               )}
             </>
           )}
-        </div>
-      </main>
-    </div>
+          </div>
+        </main>
+      </div>
+    </AppLayout>
   );
 }

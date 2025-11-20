@@ -34,6 +34,8 @@ export type RootStackParamList = {
   Chat: { conversationId: string };
   Stories: { userId: string };
   CreateStory: undefined;
+  Bookmarks: undefined;
+  Reels: undefined;
 };
 
 declare global {

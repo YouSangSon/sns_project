@@ -14,6 +14,8 @@ import ProfileScreen from '../screens/profile/ProfileScreen';
 import EditProfileScreen from '../screens/profile/EditProfileScreen';
 import StoriesScreen from '../screens/stories/StoriesScreen';
 import CreateStoryScreen from '../screens/stories/CreateStoryScreen';
+import BookmarksScreen from '../screens/bookmarks/BookmarksScreen';
+import ReelsScreen from '../screens/reels/ReelsScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -47,6 +49,8 @@ export const RootNavigator = () => {
             <Stack.Screen name="Chat" component={ChatScreen} />
             <Stack.Screen name="Stories" component={StoriesScreen} />
             <Stack.Screen name="CreateStory" component={CreateStoryScreen} />
+            <Stack.Screen name="Bookmarks" component={BookmarksScreen} />
+            <Stack.Screen name="Reels" component={ReelsScreen} />
           </>
         )}
       </Stack.Navigator>

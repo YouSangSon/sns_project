@@ -15,7 +15,7 @@ import type { RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useUserStories, useViewStory } from '../../hooks/useStories';
-import type { Story } from '../../../../shared/types';
+import type { Story } from '@shared/types';
 import type { RootStackParamList } from '../../navigation/types';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');

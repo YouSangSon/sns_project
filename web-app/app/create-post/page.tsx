@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useAuthStore } from '../../lib/stores/authStore';
 import { useCreatePost } from '../../lib/hooks/usePosts';
 import { Loading } from '../../components/ui';
-import type { CreatePostDto } from '../../../shared/types';
+import type { CreatePostDto } from '@shared/types';
 
 export default function CreatePostPage() {
   const router = useRouter();

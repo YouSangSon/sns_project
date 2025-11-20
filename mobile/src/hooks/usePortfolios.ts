@@ -1,12 +1,12 @@
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { portfoliosService } from '../../../shared/api';
+import { portfoliosService } from '@shared/api';
 import type {
   CreatePortfolioDto,
   UpdatePortfolioDto,
   CreateHoldingDto,
   UpdateHoldingDto,
   PaginationParams,
-} from '../../../shared/types';
+} from '@shared/types';
 
 // Query Keys
 export const PORTFOLIO_KEYS = {

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import type { Post } from '../../../shared/types';
+import type { Post } from '@shared/types';
 import { useLikePost, useUnlikePost } from '../../lib/hooks/usePosts';
 
 interface PostCardProps {

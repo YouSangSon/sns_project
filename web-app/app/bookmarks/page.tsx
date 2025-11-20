@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useAuthStore } from '../../lib/stores/authStore';
 import { useBookmarks, useDeleteBookmark } from '../../lib/hooks/useBookmarks';
 import { Loading } from '../../components/ui';
-import type { Bookmark } from '../../../shared/types';
+import type { Bookmark } from '@shared/types';
 
 export default function BookmarksPage() {
   const router = useRouter();

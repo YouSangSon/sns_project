@@ -16,7 +16,7 @@ import type { RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useMessages, useSendMessage, useMarkConversationAsRead } from '../../hooks/useMessages';
-import type { Message } from '../../../../shared/types';
+import type { Message } from '@shared/types';
 import type { RootStackParamList } from '../../navigation/types';
 import { useAuthStore } from '../../stores/authStore';
 

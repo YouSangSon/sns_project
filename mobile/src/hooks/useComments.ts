@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { commentsService } from '../../../shared/api';
-import type { CreateCommentDto, UpdateCommentDto, PaginationParams } from '../../../shared/types';
+import { commentsService } from '@shared/api';
+import type { CreateCommentDto, UpdateCommentDto, PaginationParams } from '@shared/types';
 
 // Query Keys
 export const COMMENT_KEYS = {

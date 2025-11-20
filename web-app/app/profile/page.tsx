@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useAuthStore } from '../../lib/stores/authStore';
 import { useUserProfile, useUserPosts, useFollowUser, useUnfollowUser } from '../../lib/hooks/useProfile';
 import { Loading } from '../../components/ui';
-import type { Post } from '../../../shared/types';
+import type { Post } from '@shared/types';
 
 export default function ProfilePage() {
   const router = useRouter();

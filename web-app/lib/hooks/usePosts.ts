@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { postsService } from '../../../shared/api';
-import type { CreatePostDto, PaginationParams } from '../../../shared/types';
+import { postsService } from '@shared/api';
+import type { CreatePostDto, PaginationParams } from '@shared/types';
 
 // Query Keys
 export const POST_KEYS = {

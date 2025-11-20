@@ -16,7 +16,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
 import { usersService } from '../../services/api';
 import { COLORS } from '../../constants';
-import type { User } from '../../../../shared/types';
+import type { User } from '@shared/types';
 import type { RootStackParamList } from '../../navigation/types';
 import { useDebounce } from '../../hooks/useDebounce';
 

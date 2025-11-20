@@ -1,8 +1,8 @@
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { authService } from '../../../shared/api';
+import { authService } from '@shared/api';
 import { useAuthStore } from '../stores/authStore';
-import type { LoginDto, CreateUserDto } from '../../../shared/types';
+import type { LoginDto, CreateUserDto } from '@shared/types';
 
 export const useAuth = () => {
   const router = useRouter();

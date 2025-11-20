@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { Alert } from 'react-native';
 import { authService } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
-import type { LoginDto, CreateUserDto } from '../../../shared/types';
+import type { LoginDto, CreateUserDto } from '@shared/types';
 
 export const useAuth = () => {
   const { user, isAuthenticated, login: storeLogin, logout: storeLogout } = useAuthStore();

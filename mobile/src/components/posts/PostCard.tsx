@@ -8,7 +8,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import type { Post } from '../../../shared/types';
+import type { Post } from '@shared/types';
 import { COLORS } from '../constants';
 import { useLikePost, useUnlikePost } from '../../hooks/usePosts';
 

@@ -1,9 +1,7 @@
 import { apiClient } from './client';
 import { API_ENDPOINTS } from '../constants/api';
 import {
-  USE_MOCK_API,
   validateMockLogin,
-  createMockUser,
   findMockUserByToken,
   createMockAuthResponse,
 } from './mockData';
@@ -16,21 +14,17 @@ import type {
 
 export class AuthService {
   async login(credentials: LoginDto): Promise<AuthResponse> {
-    // Mock 모드
-    if (USE_MOCK_API) {
-      console.log('🔧 Mock API 사용 중 - 하드코딩된 테스트 계정으로 로그인');
+    // 테스트 계정인지 확인 (백엔드 없이도 로그인 가능)
+    const mockResponse = validateMockLogin(
+      credentials.email,
+      credentials.password
+    );
+
+    if (mockResponse) {
+      console.log('🔧 테스트 계정으로 로그인 (백엔드 호출 없음)');
 
       // 약간의 지연 추가 (실제 API 호출처럼 느껴지게)
       await new Promise((resolve) => setTimeout(resolve, 500));
-
-      const mockResponse = validateMockLogin(
-        credentials.email,
-        credentials.password
-      );
-
-      if (!mockResponse) {
-        throw new Error('이메일 또는 비밀번호가 올바르지 않습니다');
-      }
 
       // 토큰 저장
       apiClient.setAuthToken(mockResponse.token);
@@ -41,7 +35,7 @@ export class AuthService {
       return mockResponse;
     }
 
-    // 실제 API 호출
+    // 테스트 계정이 아니면 실제 API 호출
     const response = await apiClient.post<AuthResponse>(
       API_ENDPOINTS.AUTH.LOGIN,
       credentials
@@ -58,28 +52,7 @@ export class AuthService {
   }
 
   async register(userData: CreateUserDto): Promise<AuthResponse> {
-    // Mock 모드
-    if (USE_MOCK_API) {
-      console.log('🔧 Mock API 사용 중 - 새 테스트 계정 생성');
-
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      const mockResponse = createMockUser(
-        userData.email,
-        userData.password,
-        userData.username,
-        userData.fullName || userData.username
-      );
-
-      apiClient.setAuthToken(mockResponse.token);
-      if (mockResponse.refreshToken) {
-        apiClient.setRefreshToken(mockResponse.refreshToken);
-      }
-
-      return mockResponse;
-    }
-
-    // 실제 API 호출
+    // 실제 API 호출 (회원가입은 항상 백엔드 필요)
     const response = await apiClient.post<AuthResponse>(
       API_ENDPOINTS.AUTH.REGISTER,
       userData
@@ -96,12 +69,16 @@ export class AuthService {
   }
 
   async logout(): Promise<void> {
-    // Mock 모드
-    if (USE_MOCK_API) {
-      console.log('🔧 Mock API 사용 중 - 로그아웃');
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      apiClient.clearAuth();
-      return;
+    // 테스트 계정인지 확인
+    const token = apiClient.getAuthToken();
+    if (token) {
+      const user = findMockUserByToken(token);
+      if (user) {
+        console.log('🔧 테스트 계정 로그아웃');
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        apiClient.clearAuth();
+        return;
+      }
     }
 
     // 실제 API 호출
@@ -113,23 +90,17 @@ export class AuthService {
   }
 
   async getCurrentUser(): Promise<User> {
-    // Mock 모드
-    if (USE_MOCK_API) {
-      console.log('🔧 Mock API 사용 중 - 현재 사용자 정보 조회');
+    const token = apiClient.getAuthToken();
+    if (!token) {
+      throw new Error('인증되지 않은 사용자입니다');
+    }
 
+    // 테스트 계정 토큰인지 확인
+    const mockUser = findMockUserByToken(token);
+    if (mockUser) {
+      console.log('🔧 테스트 계정 정보 조회');
       await new Promise((resolve) => setTimeout(resolve, 300));
-
-      const token = apiClient.getAuthToken();
-      if (!token) {
-        throw new Error('인증되지 않은 사용자입니다');
-      }
-
-      const user = findMockUserByToken(token);
-      if (!user) {
-        throw new Error('사용자를 찾을 수 없습니다');
-      }
-
-      return user;
+      return mockUser;
     }
 
     // 실제 API 호출
@@ -137,30 +108,23 @@ export class AuthService {
   }
 
   async refreshToken(): Promise<AuthResponse> {
-    // Mock 모드
-    if (USE_MOCK_API) {
-      console.log('🔧 Mock API 사용 중 - 토큰 갱신');
-
-      const token = apiClient.getAuthToken();
-      if (!token) {
-        throw new Error('인증되지 않은 사용자입니다');
-      }
-
+    const token = apiClient.getAuthToken();
+    if (token) {
+      // 테스트 계정 토큰인지 확인
       const user = findMockUserByToken(token);
-      if (!user) {
-        throw new Error('사용자를 찾을 수 없습니다');
+      if (user) {
+        console.log('🔧 테스트 계정 토큰 갱신');
+        await new Promise((resolve) => setTimeout(resolve, 300));
+
+        const newResponse = createMockAuthResponse(user);
+
+        apiClient.setAuthToken(newResponse.token);
+        if (newResponse.refreshToken) {
+          apiClient.setRefreshToken(newResponse.refreshToken);
+        }
+
+        return newResponse;
       }
-
-      await new Promise((resolve) => setTimeout(resolve, 300));
-
-      const newResponse = createMockAuthResponse(user);
-
-      apiClient.setAuthToken(newResponse.token);
-      if (newResponse.refreshToken) {
-        apiClient.setRefreshToken(newResponse.refreshToken);
-      }
-
-      return newResponse;
     }
 
     // 실제 API 호출

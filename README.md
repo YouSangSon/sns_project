@@ -345,43 +345,23 @@ cd web-app
 npm install
 ```
 
-### 3. 환경 변수 설정
+### 3. 환경 변수 설정 (선택사항)
 
-#### 옵션 A: Mock API 사용 (백엔드 서버 없이 테스트) ⭐ 추천
+환경 변수 설정은 **필수가 아닙니다**. 기본값으로 동작합니다.
 
-백엔드 서버가 아직 준비되지 않았다면, Mock API를 사용하여 프론트엔드만으로 테스트할 수 있습니다.
-
-**Mobile (.env)**
+**Mobile (.env)** - 선택사항
 ```env
 API_BASE_URL=http://localhost:8080
-USE_MOCK_API=true
 ```
 
-**Web (.env.local)**
+**Web (.env.local)** - 선택사항
 ```env
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
-NEXT_PUBLIC_USE_MOCK_API=true
 ```
 
-이 설정으로 **하드코딩된 테스트 계정**을 사용하여 로그인할 수 있습니다! (아래 '테스트 계정' 참조)
+### 4. 백엔드 API 서버 실행 (선택사항)
 
-#### 옵션 B: 실제 백엔드 API 사용
-
-**Mobile (.env)**
-```env
-API_BASE_URL=http://localhost:8080
-USE_MOCK_API=false
-```
-
-**Web (.env.local)**
-```env
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
-NEXT_PUBLIC_USE_MOCK_API=false
-```
-
-### 4. 백엔드 API 서버 실행 (옵션 B 선택 시)
-
-백엔드 REST API 서버를 먼저 실행해야 합니다:
+백엔드 서버가 있다면 실행할 수 있습니다 (없어도 테스트 가능):
 ```bash
 # https://github.com/YouSangSon/rest_server 참조
 cd rest_server
@@ -417,11 +397,15 @@ cd rest_server
 사용자명: admin
 ```
 
-#### 📝 참고사항
+#### 📝 중요 - 백엔드 없이 바로 테스트 가능! 🎉
 
-- **Mock API 모드** (`USE_MOCK_API=true`): 위 계정들이 **하드코딩되어 있어** 백엔드 없이 바로 사용 가능합니다! 🎉
-- **실제 API 모드** (`USE_MOCK_API=false`): 백엔드 서버가 준비되고 초기 데이터에 추가되어야 합니다.
-- **회원가입**: Mock API 모드에서도 회원가입이 가능합니다 (새로고침 시 데이터는 사라짐).
+위 테스트 계정들은 **프론트엔드에 하드코딩**되어 있습니다.
+
+- ✅ **백엔드 서버 없이도** 위 계정으로 로그인하면 **자동으로 성공**합니다
+- ✅ 환경 변수 설정 필요 없음
+- ✅ 별도 설정 필요 없음
+- ✅ **그냥 로그인 화면에서 위 이메일/비밀번호 입력하면 끝!**
+- 테스트 계정이 아닌 다른 계정으로 로그인 시도하면 백엔드 API 호출을 시도합니다
 
 ### 6. 앱 실행
 

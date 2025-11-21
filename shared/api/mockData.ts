@@ -1,11 +1,6 @@
 import type { User, AuthResponse } from '../types';
 
-// Mock 모드 활성화 여부
-export const USE_MOCK_API =
-  process.env.USE_MOCK_API === 'true' ||
-  process.env.NEXT_PUBLIC_USE_MOCK_API === 'true';
-
-// Mock 테스트 계정들
+// Mock 테스트 계정들 (하드코딩)
 export const MOCK_USERS: Record<string, { user: User; password: string }> = {
   'test@example.com': {
     password: 'Test123!@#',

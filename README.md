@@ -366,7 +366,38 @@ cd rest_server
 ./gradlew bootRun
 ```
 
-### 5. 앱 실행
+### 5. 테스트 계정
+
+백엔드 서버가 준비되면 다음 테스트 계정으로 로그인할 수 있습니다:
+
+#### 기본 테스트 계정
+```
+이메일: test@example.com
+비밀번호: Test123!@#
+사용자명: testuser
+```
+
+#### 추가 테스트 계정들
+```
+# 계정 1
+이메일: john@example.com
+비밀번호: John123!@#
+사용자명: johndoe
+
+# 계정 2
+이메일: jane@example.com
+비밀번호: Jane123!@#
+사용자명: janedoe
+
+# 계정 3
+이메일: admin@example.com
+비밀번호: Admin123!@#
+사용자명: admin
+```
+
+**참고**: 백엔드 서버가 아직 준비되지 않았다면, 회원가입 기능을 통해 새 계정을 생성할 수 있습니다.
+
+### 6. 앱 실행
 
 #### Mobile (React Native)
 ```bash
@@ -390,7 +421,7 @@ npm run dev
 
 브라우저에서 http://localhost:3000 접속
 
-### 6. 빌드
+### 7. 빌드
 
 #### Mobile
 ```bash

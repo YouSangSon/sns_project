@@ -10,14 +10,6 @@ const nextConfig: NextConfig = {
     };
     return config;
   },
-  // Turbopack 설정 (Next.js 16+)
-  experimental: {
-    turbo: {
-      resolveAlias: {
-        '@shared': '../shared',
-      },
-    },
-  },
 };
 
 export default nextConfig;

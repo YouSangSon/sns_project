@@ -126,6 +126,7 @@ yarn-error.log
 .expo-shared/
 dist/
 .next/
+.env
 .env*.local
 .vercel
 *.tsbuildinfo

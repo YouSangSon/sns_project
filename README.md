@@ -6,7 +6,9 @@ React Native와 Next.js로 구현한 **풀스택 소셜 네트워크 서비스**
 
 - **Mobile**: React Native (Expo) + TypeScript
 - **Web**: Next.js 14 (App Router) + TypeScript
-- **Backend**: Kotlin + Spring Boot 3 REST API ([YouSangSon/rest_server](https://github.com/YouSangSon/rest_server))
+- **Backend**:
+  - ⭐ **Supabase** (PostgreSQL + Auth + Storage) - 추천
+  - Kotlin + Spring Boot 3 REST API ([YouSangSon/rest_server](https://github.com/YouSangSon/rest_server))
 - **State Management**: React Query (@tanstack/react-query) + Zustand
 - **Shared Layer**: TypeScript types, API services, constants
 
@@ -322,7 +324,9 @@ sns_project/
 - npm 또는 yarn
 - Expo CLI (모바일 개발 시)
 - Android Studio / Xcode (모바일 개발 시)
-- 백엔드 API 서버 ([YouSangSon/rest_server](https://github.com/YouSangSon/rest_server))
+- **백엔드 (선택사항)**:
+  - ⭐ **Supabase 계정** (무료, 추천) - [가입하기](https://supabase.com)
+  - 또는 백엔드 API 서버 ([YouSangSon/rest_server](https://github.com/YouSangSon/rest_server))
 
 ### 1. 저장소 클론
 
@@ -337,40 +341,67 @@ cd sns_project
 ```bash
 cd mobile
 npm install
+
+# Supabase 사용 시
+npm install @supabase/supabase-js
 ```
 
 #### Web (Next.js)
 ```bash
 cd web-app
 npm install
+
+# Supabase 사용 시
+npm install @supabase/supabase-js
 ```
 
-### 3. 환경 변수 설정 (선택사항)
+### 3. 백엔드 설정 (옵션 선택)
 
-환경 변수 설정은 **필수가 아닙니다**. 기본값으로 동작합니다.
+#### 옵션 A: Supabase 사용 (추천 ⭐)
 
-**Mobile (.env)** - 선택사항
+**5-10분 만에 완전한 백엔드 구축!**
+
+1. **Supabase 프로젝트 생성**: [supabase.com](https://supabase.com)에서 프로젝트 생성
+2. **데이터베이스 설정**: `supabase/schema.sql` 파일을 SQL Editor에서 실행
+3. **테스트 데이터 추가**: `supabase/seed.sql` 파일을 SQL Editor에서 실행
+4. **환경 변수 설정**:
+
+**Mobile (.env)**
 ```env
-API_BASE_URL=http://localhost:8080
+SUPABASE_URL=https://xxxxx.supabase.co
+SUPABASE_ANON_KEY=eyJhbGc...
 ```
 
-**Web (.env.local)** - 선택사항
+**Web (.env.local)**
 ```env
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGc...
 ```
 
-### 4. 백엔드 API 서버 실행 (선택사항)
+5. **자세한 설정 방법**: [SUPABASE_SETUP.md](./SUPABASE_SETUP.md) 참조
 
-백엔드 서버가 있다면 실행할 수 있습니다 (없어도 테스트 가능):
+#### 옵션 B: 자체 백엔드 API 서버
+
 ```bash
 # https://github.com/YouSangSon/rest_server 참조
 cd rest_server
 ./gradlew bootRun
 ```
 
-### 5. 테스트 계정
+**환경 변수**:
+```env
+# Mobile (.env)
+API_BASE_URL=http://localhost:8080
 
-다음 테스트 계정으로 로그인할 수 있습니다:
+# Web (.env.local)
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+```
+
+#### 옵션 C: 백엔드 없이 테스트 (하드코딩된 계정)
+
+환경 변수 설정 없이 바로 실행하면 하드코딩된 테스트 계정으로 로그인 가능합니다!
+
+### 4. 테스트 계정
 
 #### 기본 테스트 계정
 ```
@@ -397,15 +428,22 @@ cd rest_server
 사용자명: admin
 ```
 
-#### 📝 중요 - 백엔드 없이 바로 테스트 가능! 🎉
+#### 📝 백엔드 옵션별 로그인 방법
 
-위 테스트 계정들은 **프론트엔드에 하드코딩**되어 있습니다.
+**🔹 Supabase 사용 시 (옵션 A)**
+- `supabase/seed.sql`을 실행하면 위 테스트 계정들이 데이터베이스에 생성됩니다
+- 실제 Supabase Auth를 통해 로그인됩니다
+- ✅ **추천**: 완전한 백엔드 기능 사용 가능!
 
-- ✅ **백엔드 서버 없이도** 위 계정으로 로그인하면 **자동으로 성공**합니다
-- ✅ 환경 변수 설정 필요 없음
-- ✅ 별도 설정 필요 없음
-- ✅ **그냥 로그인 화면에서 위 이메일/비밀번호 입력하면 끝!**
-- 테스트 계정이 아닌 다른 계정으로 로그인 시도하면 백엔드 API 호출을 시도합니다
+**🔹 자체 백엔드 사용 시 (옵션 B)**
+- 백엔드 서버의 초기 데이터에 테스트 계정을 추가해야 합니다
+- REST API를 통해 로그인됩니다
+
+**🔹 백엔드 없이 테스트 (옵션 C)**
+- **프론트엔드에 하드코딩**되어 있어 백엔드 없이도 로그인 가능! 🎉
+- 환경 변수 설정 불필요
+- **그냥 로그인 화면에서 위 이메일/비밀번호 입력하면 끝!**
+- ⚠️ 제한사항: 로그인 후 다른 기능(게시물, 댓글 등)은 백엔드가 필요합니다
 
 ### 6. 앱 실행
 

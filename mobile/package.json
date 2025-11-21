@@ -4,8 +4,17 @@
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
+    "start:dev": "ENV=development expo start",
+    "start:staging": "ENV=staging expo start",
+    "start:prod": "ENV=production expo start",
     "android": "expo start --android",
+    "android:dev": "ENV=development expo start --android",
+    "android:staging": "ENV=staging expo start --android",
+    "android:prod": "ENV=production expo start --android",
     "ios": "expo start --ios",
+    "ios:dev": "ENV=development expo start --ios",
+    "ios:staging": "ENV=staging expo start --ios",
+    "ios:prod": "ENV=production expo start --ios",
     "web": "expo start --web"
   },
   "dependencies": {

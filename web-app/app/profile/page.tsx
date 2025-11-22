@@ -94,13 +94,23 @@ export default function ProfilePage() {
             <div className="flex flex-col md:flex-row gap-8 items-start md:items-center">
               {/* Avatar */}
               <div className="flex justify-center md:justify-start w-full md:w-auto">
-                <div className="relative w-24 h-24 md:w-36 md:h-36 rounded-full overflow-hidden flex-shrink-0 ring-1 ring-gray-200">
-                  <Image
-                    src={profileData?.photoUrl || 'https://via.placeholder.com/150'}
-                    alt={profileData?.displayName || 'Profile'}
-                    fill
-                    className="object-cover"
-                  />
+                <div className="relative w-24 h-24 md:w-36 md:h-36 rounded-full overflow-hidden flex-shrink-0 ring-1 ring-gray-200 bg-gray-200 flex items-center justify-center">
+                  {profileData?.photoUrl ? (
+                    <Image
+                      src={profileData.photoUrl}
+                      alt={profileData?.displayName || 'Profile'}
+                      fill
+                      className="object-cover"
+                      onError={(e) => {
+                        // Hide image on error and show default avatar
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  ) : null}
+                  {/* Default Avatar Icon */}
+                  <svg className="w-16 h-16 md:w-24 md:h-24 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                  </svg>
                 </div>
               </div>
 
@@ -228,14 +238,23 @@ export default function ProfilePage() {
                   <button
                     key={post.postId}
                     onClick={() => router.push(`/posts/${post.postId}`)}
-                    className="relative aspect-square group overflow-hidden bg-gray-100"
+                    className="relative aspect-square group overflow-hidden bg-gray-200 flex items-center justify-center"
                   >
-                    <Image
-                      src={post.imageUrls[0]}
-                      alt="Post"
-                      fill
-                      className="object-cover"
-                    />
+                    {post.imageUrls[0] ? (
+                      <Image
+                        src={post.imageUrls[0]}
+                        alt="Post"
+                        fill
+                        className="object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    ) : null}
+                    {/* Fallback icon for failed images */}
+                    <svg className="w-12 h-12 text-gray-400 absolute" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
                     {post.imageUrls.length > 1 && (
                       <div className="absolute top-2 right-2">
                         <svg className="w-5 h-5 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 20 20">

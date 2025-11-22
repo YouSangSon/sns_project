@@ -1,69 +1,86 @@
-import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { notificationsService } from '@shared/api';
-import type { PaginationParams } from '@shared/types';
+import { useEffect, useRef, useState } from 'react';
+import * as Notifications from 'expo-notifications';
+import { useNavigation } from '@react-navigation/native';
+import { notificationService } from '../services/notificationService';
 
-// Query Keys
-export const NOTIFICATION_KEYS = {
-  all: ['notifications'] as const,
-  lists: () => [...NOTIFICATION_KEYS.all, 'list'] as const,
-  list: (params?: PaginationParams) => [...NOTIFICATION_KEYS.lists(), params] as const,
-  unread: () => [...NOTIFICATION_KEYS.all, 'unread'] as const,
-  unreadCount: () => [...NOTIFICATION_KEYS.all, 'unreadCount'] as const,
-};
+export function useNotifications() {
+  const [pushToken, setPushToken] = useState<string | null>(null);
+  const [notification, setNotification] = useState<Notifications.Notification | null>(null);
+  const notificationListener = useRef<any>();
+  const responseListener = useRef<any>();
+  const navigation = useNavigation();
 
-// Get notifications
-export const useNotifications = (params?: PaginationParams) => {
-  return useInfiniteQuery({
-    queryKey: NOTIFICATION_KEYS.list(params),
-    queryFn: ({ pageParam = 1 }) =>
-      notificationsService.getNotifications({ ...params, page: pageParam }),
-    getNextPageParam: (lastPage, allPages) => {
-      return lastPage.hasMore ? allPages.length + 1 : undefined;
-    },
-    initialPageParam: 1,
-  });
-};
+  useEffect(() => {
+    // 푸시 알림 등록
+    registerForPushNotifications();
 
-// Get unread notifications
-export const useUnreadNotifications = () => {
-  return useQuery({
-    queryKey: NOTIFICATION_KEYS.unread(),
-    queryFn: () => notificationsService.getUnreadNotifications(),
-    refetchInterval: 30000, // Refetch every 30 seconds
-  });
-};
+    // 알림 수신 리스너
+    notificationListener.current = notificationService.addNotificationReceivedListener(
+      (notification) => {
+        console.log('알림 수신:', notification);
+        setNotification(notification);
+      }
+    );
 
-// Get unread count
-export const useUnreadCount = () => {
-  return useQuery({
-    queryKey: NOTIFICATION_KEYS.unreadCount(),
-    queryFn: () => notificationsService.getUnreadCount(),
-    refetchInterval: 30000, // Refetch every 30 seconds
-  });
-};
+    // 알림 응답 리스너 (사용자가 알림을 탭했을 때)
+    responseListener.current = notificationService.addNotificationResponseReceivedListener(
+      (response) => {
+        console.log('알림 응답:', response);
+        handleNotificationResponse(response);
+      }
+    );
 
-// Mark notification as read
-export const useMarkAsRead = () => {
-  const queryClient = useQueryClient();
+    return () => {
+      if (notificationListener.current) {
+        Notifications.removeNotificationSubscription(notificationListener.current);
+      }
+      if (responseListener.current) {
+        Notifications.removeNotificationSubscription(responseListener.current);
+      }
+    };
+  }, []);
 
-  return useMutation({
-    mutationFn: (notificationId: string) => notificationsService.markAsRead(notificationId),
-    onSuccess: () => {
-      // Invalidate all notification queries
-      queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.all });
-    },
-  });
-};
+  const registerForPushNotifications = async () => {
+    const token = await notificationService.registerForPushNotifications();
+    setPushToken(token);
+  };
 
-// Mark all as read
-export const useMarkAllAsRead = () => {
-  const queryClient = useQueryClient();
+  const handleNotificationResponse = (response: Notifications.NotificationResponse) => {
+    const data = response.notification.request.content.data;
 
-  return useMutation({
-    mutationFn: () => notificationsService.markAllAsRead(),
-    onSuccess: () => {
-      // Invalidate all notification queries
-      queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.all });
-    },
-  });
-};
+    // 알림 타입에 따라 적절한 화면으로 이동
+    if (data?.type === 'like') {
+      // 좋아요 알림 - 게시물 상세 화면으로 이동
+      if (data.postId) {
+        navigation.navigate('PostDetail' as never, { postId: data.postId } as never);
+      }
+    } else if (data?.type === 'comment') {
+      // 댓글 알림 - 게시물 상세 화면으로 이동
+      if (data.postId) {
+        navigation.navigate('PostDetail' as never, { postId: data.postId } as never);
+      }
+    } else if (data?.type === 'follow') {
+      // 팔로우 알림 - 프로필 화면으로 이동
+      if (data.userId) {
+        navigation.navigate('Profile' as never, { userId: data.userId } as never);
+      }
+    } else if (data?.type === 'message') {
+      // 메시지 알림 - 채팅 화면으로 이동
+      if (data.conversationId) {
+        navigation.navigate('Chat' as never, { conversationId: data.conversationId } as never);
+      }
+    }
+
+    // 배지 카운트 감소
+    notificationService.clearBadgeCount();
+  };
+
+  return {
+    pushToken,
+    notification,
+    sendLocalNotification: notificationService.showLocalNotification.bind(notificationService),
+    cancelAllNotifications: notificationService.cancelAllNotifications.bind(notificationService),
+    setBadgeCount: notificationService.setBadgeCount.bind(notificationService),
+    clearBadgeCount: notificationService.clearBadgeCount.bind(notificationService),
+  };
+}

@@ -9,7 +9,7 @@
     "build:staging": "NODE_ENV=staging next build",
     "build:production": "NODE_ENV=production next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "next lint"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.10",

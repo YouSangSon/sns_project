@@ -704,17 +704,23 @@ npm test
 
 자세한 배포 방법은 **[DEPLOYMENT.md](./DEPLOYMENT.md)** 문서를 참조하세요.
 
+## 🚀 최근 추가된 기능 (2025)
+
+- ✅ **Investment UI 화면** - 포트폴리오 관리, 자산 분석, 관심종목 (Mobile & Web)
+- ✅ **다크 모드** - 라이트/다크/시스템 자동 전환
+- ✅ **Push Notifications (FCM)** - 실시간 알림 (좋아요, 댓글, 팔로우, 메시지)
+- ✅ **PWA 지원** - 홈 화면에 추가, 오프라인 지원, Service Worker
+- ✅ **WebSocket 실시간 업데이트** - 실시간 메시지, 타이핑 인디케이터, 온라인 상태
+- ✅ **Performance Monitoring** - Sentry 에러 추적 및 성능 분석
+- ✅ **비디오 녹화 및 편집** - Reels용 비디오 촬영, 필터, 음악 추가
+
 ## 🚀 향후 계획
 
-- [ ] WebSocket 기반 실시간 업데이트
-- [ ] 비디오 녹화 및 편집
-- [ ] 다크 모드 완성
 - [ ] 다국어 지원 (i18n)
-- [ ] E2E 테스트
-- [ ] Performance monitoring
-- [ ] PWA 지원
-- [ ] Push notifications (FCM)
-- [ ] Investment UI 화면 구현
+- [ ] E2E 테스트 (Detox / Playwright)
+- [ ] AI 기반 콘텐츠 추천
+- [ ] 라이브 스트리밍
+- [ ] 그룹 채팅
 
 ## 📄 라이선스
 

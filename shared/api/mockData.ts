@@ -152,3 +152,211 @@ export const findMockUserByToken = (token: string): User | null => {
 
   return mockUser?.user || null;
 };
+
+// Mock Posts
+import type { Post, Comment, Message, Notification } from '../types';
+
+export const MOCK_POSTS: Post[] = [
+  {
+    postId: 'mock-post-1',
+    userId: 'mock-user-2',
+    username: 'johndoe',
+    userPhotoUrl: 'https://i.pravatar.cc/300?u=johndoe',
+    caption: '멋진 풍경 🌄 #여행 #자연',
+    imageUrls: [
+      'https://picsum.photos/800/600?random=1',
+      'https://picsum.photos/800/600?random=2',
+    ],
+    likes: 342,
+    comments: 28,
+    shares: 12,
+    isLiked: false,
+    isBookmarked: false,
+    location: '제주도',
+    createdAt: new Date('2025-01-20T10:30:00').toISOString(),
+    updatedAt: new Date('2025-01-20T10:30:00').toISOString(),
+  },
+  {
+    postId: 'mock-post-2',
+    userId: 'mock-user-3',
+    username: 'janedoe',
+    userPhotoUrl: 'https://i.pravatar.cc/300?u=janedoe',
+    caption: '오늘의 브런치 🥐☕️ #맛집 #브런치',
+    imageUrls: [
+      'https://picsum.photos/800/600?random=3',
+    ],
+    likes: 521,
+    comments: 45,
+    shares: 18,
+    isLiked: true,
+    isBookmarked: false,
+    createdAt: new Date('2025-01-19T14:20:00').toISOString(),
+    updatedAt: new Date('2025-01-19T14:20:00').toISOString(),
+  },
+  {
+    postId: 'mock-post-3',
+    userId: 'mock-user-1',
+    username: 'testuser',
+    userPhotoUrl: 'https://i.pravatar.cc/300?u=testuser',
+    caption: '새로운 도전! 💪',
+    imageUrls: [
+      'https://picsum.photos/800/600?random=4',
+    ],
+    likes: 89,
+    comments: 12,
+    shares: 3,
+    isLiked: false,
+    isBookmarked: true,
+    createdAt: new Date('2025-01-18T09:15:00').toISOString(),
+    updatedAt: new Date('2025-01-18T09:15:00').toISOString(),
+  },
+];
+
+// Mock Comments
+export const MOCK_COMMENTS: Record<string, Comment[]> = {
+  'mock-post-1': [
+    {
+      commentId: 'comment-1',
+      postId: 'mock-post-1',
+      userId: 'mock-user-3',
+      username: 'janedoe',
+      userPhotoUrl: 'https://i.pravatar.cc/300?u=janedoe',
+      content: '너무 예쁘다! 나도 가고 싶어요',
+      likes: 15,
+      isLiked: false,
+      createdAt: new Date('2025-01-20T11:00:00'),
+    },
+    {
+      commentId: 'comment-2',
+      postId: 'mock-post-1',
+      userId: 'mock-user-1',
+      username: 'testuser',
+      userPhotoUrl: 'https://i.pravatar.cc/300?u=testuser',
+      content: '제주도 최고!!',
+      likes: 8,
+      isLiked: true,
+      createdAt: new Date('2025-01-20T12:30:00'),
+    },
+  ],
+  'mock-post-2': [
+    {
+      commentId: 'comment-3',
+      postId: 'mock-post-2',
+      userId: 'mock-user-2',
+      username: 'johndoe',
+      userPhotoUrl: 'https://i.pravatar.cc/300?u=johndoe',
+      content: '맛있겠다!',
+      likes: 12,
+      isLiked: false,
+      createdAt: new Date('2025-01-19T15:00:00'),
+    },
+  ],
+};
+
+// Mock Notifications
+export const MOCK_NOTIFICATIONS: Notification[] = [
+  {
+    notificationId: 'notif-1',
+    userId: 'mock-user-1',
+    type: 'like',
+    actorId: 'mock-user-2',
+    actorUsername: 'johndoe',
+    actorPhotoUrl: 'https://i.pravatar.cc/300?u=johndoe',
+    postId: 'mock-post-3',
+    postImageUrl: 'https://picsum.photos/800/600?random=4',
+    content: '님이 회원님의 게시물을 좋아합니다.',
+    isRead: false,
+    createdAt: new Date('2025-01-20T16:30:00'),
+  },
+  {
+    notificationId: 'notif-2',
+    userId: 'mock-user-1',
+    type: 'comment',
+    actorId: 'mock-user-3',
+    actorUsername: 'janedoe',
+    actorPhotoUrl: 'https://i.pravatar.cc/300?u=janedoe',
+    postId: 'mock-post-3',
+    postImageUrl: 'https://picsum.photos/800/600?random=4',
+    content: '님이 댓글을 남겼습니다: "멋지네요!"',
+    isRead: false,
+    createdAt: new Date('2025-01-20T15:00:00'),
+  },
+  {
+    notificationId: 'notif-3',
+    userId: 'mock-user-1',
+    type: 'follow',
+    actorId: 'mock-user-2',
+    actorUsername: 'johndoe',
+    actorPhotoUrl: 'https://i.pravatar.cc/300?u=johndoe',
+    content: '님이 회원님을 팔로우하기 시작했습니다.',
+    isRead: true,
+    createdAt: new Date('2025-01-19T10:00:00'),
+  },
+];
+
+// Mock Messages
+export const MOCK_CONVERSATIONS = [
+  {
+    conversationId: 'conv-1',
+    userId: 'mock-user-2',
+    username: 'johndoe',
+    userPhotoUrl: 'https://i.pravatar.cc/300?u=johndoe',
+    lastMessage: '사진 정말 잘 나왔어요!',
+    lastMessageTime: new Date('2025-01-20T14:30:00'),
+    unreadCount: 2,
+    isOnline: true,
+  },
+  {
+    conversationId: 'conv-2',
+    userId: 'mock-user-3',
+    username: 'janedoe',
+    userPhotoUrl: 'https://i.pravatar.cc/300?u=janedoe',
+    lastMessage: '내일 만날까요?',
+    lastMessageTime: new Date('2025-01-20T12:00:00'),
+    unreadCount: 0,
+    isOnline: false,
+  },
+];
+
+export const MOCK_MESSAGES: Record<string, Message[]> = {
+  'conv-1': [
+    {
+      messageId: 'msg-1',
+      conversationId: 'conv-1',
+      senderId: 'mock-user-2',
+      receiverId: 'mock-user-1',
+      content: '안녕하세요!',
+      isRead: true,
+      createdAt: new Date('2025-01-20T14:00:00'),
+    },
+    {
+      messageId: 'msg-2',
+      conversationId: 'conv-1',
+      senderId: 'mock-user-1',
+      receiverId: 'mock-user-2',
+      content: '네, 안녕하세요!',
+      isRead: true,
+      createdAt: new Date('2025-01-20T14:05:00'),
+    },
+    {
+      messageId: 'msg-3',
+      conversationId: 'conv-1',
+      senderId: 'mock-user-2',
+      receiverId: 'mock-user-1',
+      content: '사진 정말 잘 나왔어요!',
+      isRead: false,
+      createdAt: new Date('2025-01-20T14:30:00'),
+    },
+  ],
+  'conv-2': [
+    {
+      messageId: 'msg-4',
+      conversationId: 'conv-2',
+      senderId: 'mock-user-3',
+      receiverId: 'mock-user-1',
+      content: '내일 만날까요?',
+      isRead: true,
+      createdAt: new Date('2025-01-20T12:00:00'),
+    },
+  ],
+};

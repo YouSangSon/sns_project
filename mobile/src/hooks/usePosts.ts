@@ -1,6 +1,7 @@
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Alert } from 'react-native';
 import { postsService } from '../services/api';
+import { MOCK_POSTS } from '@shared/api/mockData';
 import type { Post, CreatePostDto, PaginationParams } from '@shared/types';
 
 // Query Keys
@@ -16,8 +17,20 @@ export const POST_KEYS = {
 export const useFeedPosts = (params?: PaginationParams) => {
   return useInfiniteQuery({
     queryKey: POST_KEYS.list(params),
-    queryFn: ({ pageParam = 1 }) =>
-      postsService.getFeed({ ...params, page: pageParam }),
+    queryFn: async ({ pageParam = 1 }) => {
+      try {
+        return await postsService.getFeed({ ...params, page: pageParam });
+      } catch (error) {
+        console.log('📦 백엔드 없이 Mock 게시물 사용 중');
+        return {
+          data: MOCK_POSTS,
+          total: MOCK_POSTS.length,
+          page: pageParam,
+          limit: 10,
+          hasMore: false,
+        };
+      }
+    },
     getNextPageParam: (lastPage, allPages) => {
       return lastPage.hasMore ? allPages.length + 1 : undefined;
     },
@@ -29,7 +42,14 @@ export const useFeedPosts = (params?: PaginationParams) => {
 export const usePost = (postId: string) => {
   return useQuery({
     queryKey: POST_KEYS.detail(postId),
-    queryFn: () => postsService.getPostById(postId),
+    queryFn: async () => {
+      try {
+        return await postsService.getPostById(postId);
+      } catch (error) {
+        console.log('📦 백엔드 없이 Mock 게시물 사용 중');
+        return MOCK_POSTS.find(p => p.postId === postId) || MOCK_POSTS[0];
+      }
+    },
     enabled: !!postId,
   });
 };

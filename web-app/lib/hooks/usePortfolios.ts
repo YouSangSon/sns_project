@@ -1,5 +1,10 @@
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { portfoliosService } from '@shared/api';
+import {
+  MOCK_PORTFOLIOS,
+  MOCK_HOLDINGS,
+  MOCK_PORTFOLIO_ANALYTICS,
+} from '@shared/api/investmentMockData';
 import type {
   CreatePortfolioDto,
   UpdatePortfolioDto,
@@ -25,8 +30,20 @@ export const PORTFOLIO_KEYS = {
 export const usePortfolios = (params?: PaginationParams) => {
   return useInfiniteQuery({
     queryKey: PORTFOLIO_KEYS.list(params),
-    queryFn: ({ pageParam = 1 }) =>
-      portfoliosService.getPortfolios({ ...params, page: pageParam }),
+    queryFn: async ({ pageParam = 1 }) => {
+      try {
+        return await portfoliosService.getPortfolios({ ...params, page: pageParam });
+      } catch (error) {
+        console.log('📦 백엔드 없이 Mock 데이터 사용 중');
+        return {
+          data: MOCK_PORTFOLIOS,
+          total: MOCK_PORTFOLIOS.length,
+          page: pageParam,
+          limit: 10,
+          hasMore: false,
+        };
+      }
+    },
     getNextPageParam: (lastPage, allPages) => {
       return lastPage.hasMore ? allPages.length + 1 : undefined;
     },
@@ -60,7 +77,14 @@ export const useUserPortfolios = (userId: string) => {
 export const usePortfolio = (portfolioId: string) => {
   return useQuery({
     queryKey: PORTFOLIO_KEYS.detail(portfolioId),
-    queryFn: () => portfoliosService.getPortfolio(portfolioId),
+    queryFn: async () => {
+      try {
+        return await portfoliosService.getPortfolio(portfolioId);
+      } catch (error) {
+        console.log('📦 백엔드 없이 Mock 포트폴리오 사용 중');
+        return MOCK_PORTFOLIOS.find(p => p.portfolioId === portfolioId) || MOCK_PORTFOLIOS[0];
+      }
+    },
     enabled: !!portfolioId,
   });
 };
@@ -69,19 +93,36 @@ export const usePortfolio = (portfolioId: string) => {
 export const usePortfolioAnalytics = (portfolioId: string) => {
   return useQuery({
     queryKey: PORTFOLIO_KEYS.analytics(portfolioId),
-    queryFn: () => portfoliosService.getPortfolioAnalytics(portfolioId),
+    queryFn: async () => {
+      try {
+        return await portfoliosService.getPortfolioAnalytics(portfolioId);
+      } catch (error) {
+        console.log('📦 백엔드 없이 Mock 분석 데이터 사용 중');
+        return MOCK_PORTFOLIO_ANALYTICS[portfolioId] || MOCK_PORTFOLIO_ANALYTICS['mock-portfolio-1'];
+      }
+    },
     enabled: !!portfolioId,
   });
 };
 
-// Get holdings
-export const useHoldings = (portfolioId: string) => {
+// Get holdings (usePortfolioHoldings alias)
+export const usePortfolioHoldings = (portfolioId: string) => {
   return useQuery({
     queryKey: PORTFOLIO_KEYS.holdings(portfolioId),
-    queryFn: () => portfoliosService.getHoldings(portfolioId),
+    queryFn: async () => {
+      try {
+        return await portfoliosService.getHoldings(portfolioId);
+      } catch (error) {
+        console.log('📦 백엔드 없이 Mock 보유종목 사용 중');
+        return MOCK_HOLDINGS[portfolioId] || MOCK_HOLDINGS['mock-portfolio-1'];
+      }
+    },
     enabled: !!portfolioId,
   });
 };
+
+// Backward compatibility
+export const useHoldings = usePortfolioHoldings;
 
 // Create portfolio
 export const useCreatePortfolio = () => {

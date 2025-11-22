@@ -22,31 +22,31 @@ export default function InvestmentPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-500">로딩 중...</div>
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="text-text-secondary dark:text-gray-400">로딩 중...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-surface dark:bg-background">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">내 포트폴리오</h1>
+          <h1 className="text-3xl font-bold text-foreground dark:text-white">내 포트폴리오</h1>
           <Link
             href="/investment/create"
-            className="px-6 py-3 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition"
+            className="px-6 py-3 bg-primary hover:bg-blue-600 text-white rounded-lg font-semibold transition"
           >
             + 포트폴리오 생성
           </Link>
         </div>
 
         {/* Portfolio Grid */}
-        {portfolios?.data && portfolios.data.length > 0 ? (
+        {portfolios?.pages?.[0]?.data && portfolios.pages[0].data.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {portfolios.data.map((portfolio: Portfolio) => {
-              const profitColor = portfolio.totalProfitRate >= 0 ? 'text-green-600' : 'text-red-600';
+            {portfolios.pages[0].data.map((portfolio: Portfolio) => {
+              const profitColor = portfolio.totalProfitRate >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
 
               return (
                 <Link

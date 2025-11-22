@@ -11,6 +11,7 @@ export type MainTabParamList = {
   Home: undefined;
   Search: undefined;
   CreatePost: undefined;
+  Investment: undefined;
   Notifications: undefined;
   Profile: { userId?: string };
 };

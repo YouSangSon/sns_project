@@ -10,6 +10,7 @@ import { CreatePostScreen } from '../screens/posts/CreatePostScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
 import SearchScreen from '../screens/search/SearchScreen';
 import NotificationsScreen from '../screens/notifications/NotificationsScreen';
+import PortfolioListScreen from '../screens/investment/PortfolioListScreen';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
@@ -29,6 +30,9 @@ export const MainTabs = () => {
               break;
             case 'CreatePost':
               iconName = focused ? 'add-circle' : 'add-circle-outline';
+              break;
+            case 'Investment':
+              iconName = focused ? 'cash' : 'cash-outline';
               break;
             case 'Notifications':
               iconName = focused ? 'heart' : 'heart-outline';
@@ -55,6 +59,7 @@ export const MainTabs = () => {
       <Tab.Screen name="Home" component={FeedScreen} />
       <Tab.Screen name="Search" component={SearchScreen} />
       <Tab.Screen name="CreatePost" component={CreatePostScreen} />
+      <Tab.Screen name="Investment" component={PortfolioListScreen} />
       <Tab.Screen name="Notifications" component={NotificationsScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>

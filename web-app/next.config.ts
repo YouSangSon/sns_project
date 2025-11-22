@@ -18,6 +18,20 @@ const nextConfig: NextConfig = {
 
     return config;
   },
+  // PWA 설정
+  async headers() {
+    return [
+      {
+        source: '/manifest.json',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'application/manifest+json',
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

@@ -76,13 +76,23 @@ export const PostCard: React.FC<PostCardProps> = ({
           onClick={onUserClick}
           className="flex items-center flex-1 hover:opacity-70"
         >
-          <Image
-            src={post.userPhotoUrl || 'https://via.placeholder.com/40'}
-            alt={post.username}
-            width={40}
-            height={40}
-            className="rounded-full"
-          />
+          <div className="relative w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+            {post.userPhotoUrl ? (
+              <Image
+                src={post.userPhotoUrl}
+                alt={post.username}
+                width={40}
+                height={40}
+                className="rounded-full"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            ) : null}
+            <svg className="w-6 h-6 text-gray-400 absolute" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+            </svg>
+          </div>
           <div className="ml-3 text-left">
             <p className="font-semibold text-sm">{post.username}</p>
             {post.location && (
@@ -98,17 +108,26 @@ export const PostCard: React.FC<PostCardProps> = ({
       </div>
 
       {/* Image */}
-      <div className="relative w-full aspect-square bg-gray-100">
-        <Image
-          src={post.imageUrls[currentImageIndex]}
-          alt="Post image"
-          fill
-          className="object-cover"
-        />
+      <div className="relative w-full aspect-square bg-gray-200 flex items-center justify-center">
+        {post.imageUrls[currentImageIndex] ? (
+          <Image
+            src={post.imageUrls[currentImageIndex]}
+            alt="Post image"
+            fill
+            className="object-cover"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        ) : null}
+        {/* Fallback icon */}
+        <svg className="w-16 h-16 text-gray-400 absolute" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
 
         {/* Image Indicator */}
         {post.imageUrls.length > 1 && (
-          <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+          <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-10">
             {post.imageUrls.map((_, index) => (
               <div
                 key={index}

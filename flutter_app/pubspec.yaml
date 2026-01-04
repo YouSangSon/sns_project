@@ -45,6 +45,7 @@ dependencies:
   timeago: ^3.6.1
   equatable: ^2.0.5
   uuid: ^4.3.3
+  yaml: ^3.1.2
 
   # Icons
   cupertino_icons: ^1.0.6
@@ -65,3 +66,6 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - config/dev.yaml
+    - config/staging.yaml
+    - config/prod.yaml

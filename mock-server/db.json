@@ -1,0 +1,95 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "email": "alice@example.com",
+      "user_name": "alice",
+      "display_name": "Alice Johnson",
+      "bio": "Travel enthusiast 🌍 | Coffee lover ☕",
+      "profile_image_url": "https://i.pravatar.cc/150?img=1",
+      "followers_count": 1234,
+      "following_count": 567,
+      "posts_count": 89,
+      "created_at": "2023-01-01T00:00:00Z"
+    },
+    {
+      "id": "2",
+      "email": "bob@example.com",
+      "user_name": "bob",
+      "display_name": "Bob Smith",
+      "bio": "Photographer 📷 | Nature lover 🌿",
+      "profile_image_url": "https://i.pravatar.cc/150?img=2",
+      "followers_count": 5678,
+      "following_count": 890,
+      "posts_count": 234,
+      "created_at": "2023-06-01T00:00:00Z"
+    },
+    {
+      "id": "test-user",
+      "email": "test@example.com",
+      "user_name": "testuser",
+      "display_name": "Test User",
+      "bio": "This is a test account",
+      "profile_image_url": "https://i.pravatar.cc/150?img=4",
+      "followers_count": 100,
+      "following_count": 50,
+      "posts_count": 25,
+      "created_at": "2024-11-01T00:00:00Z"
+    }
+  ],
+  "posts": [
+    {
+      "id": "1",
+      "user_id": "1",
+      "caption": "Beautiful sunset at the beach 🌅 #sunset #beach",
+      "image_urls": [
+        "https://picsum.photos/seed/1/800/600",
+        "https://picsum.photos/seed/2/800/600"
+      ],
+      "likes_count": 234,
+      "comments_count": 12,
+      "is_liked": false,
+      "is_bookmarked": false,
+      "created_at": "2024-01-03T10:00:00Z"
+    },
+    {
+      "id": "2",
+      "user_id": "2",
+      "caption": "Morning coffee ritual ☕️ #coffee",
+      "image_urls": ["https://picsum.photos/seed/3/800/600"],
+      "likes_count": 567,
+      "comments_count": 34,
+      "is_liked": true,
+      "is_bookmarked": true,
+      "created_at": "2024-01-03T07:00:00Z"
+    }
+  ],
+  "comments": [
+    {
+      "id": "1",
+      "post_id": "1",
+      "user_id": "2",
+      "text": "Amazing photo! 😍",
+      "created_at": "2024-01-03T11:30:00Z"
+    },
+    {
+      "id": "2",
+      "post_id": "1",
+      "user_id": "test-user",
+      "text": "Love this!",
+      "created_at": "2024-01-03T12:00:00Z"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "1",
+      "user_id": "test-user",
+      "type": "like",
+      "actor_id": "1",
+      "post_id": "1",
+      "message": "alice liked your post",
+      "is_read": false,
+      "created_at": "2024-01-04T09:00:00Z"
+    }
+  ]
+}

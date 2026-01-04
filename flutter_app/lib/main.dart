@@ -4,7 +4,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app.dart';
+import 'core/config/env_config.dart';
 import 'core/network/dio_client.dart';
+
+// 환경 변수를 --dart-define으로 전달받습니다.
+// 예: flutter run --dart-define=ENV=dev
+const String environment = String.fromEnvironment('ENV', defaultValue: 'dev');
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,6 +41,9 @@ void main() async {
 }
 
 Future<void> _initializeServices() async {
+  // 환경 설정 초기화 (가장 먼저 실행)
+  await EnvConfig.initialize(env: environment);
+
   // Dio 클라이언트 초기화
   DioClient.instance.init();
 

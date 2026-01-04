@@ -1,27 +1,23 @@
+import '../config/env_config.dart';
+
 /// 앱 설정 상수
+/// 환경별 설정은 EnvConfig에서 가져오고, 앱 전체에서 사용되는 상수는 여기에 정의합니다.
 abstract class AppConfig {
-  // App Info
-  static const String appName = 'SNS App';
-  static const String appVersion = '1.0.0';
+  // EnvConfig에서 가져오는 설정들
+  static String get appName => EnvConfig.instance.appName;
+  static String get appVersion => EnvConfig.instance.appVersion;
+  static String get baseUrl => EnvConfig.instance.apiBaseUrl;
+  static Duration get connectionTimeout => EnvConfig.instance.connectionTimeout;
+  static Duration get receiveTimeout => EnvConfig.instance.receiveTimeout;
+  static int get defaultPageSize => EnvConfig.instance.defaultPageSize;
+  static int get postsPageSize => EnvConfig.instance.postsPageSize;
+  static int get commentsPageSize => EnvConfig.instance.commentsPageSize;
+  static int get messagesPageSize => EnvConfig.instance.messagesPageSize;
+  static bool get isDevelopment => EnvConfig.instance.isDevelopment;
+  static bool get enableLogging => EnvConfig.instance.apiEnableLogging;
 
-  // API Configuration
-  static const String baseUrl = 'http://localhost:8080';
-  static const String prodBaseUrl = 'https://api.yoursns.com';
-  static const Duration connectionTimeout = Duration(seconds: 30);
-  static const Duration receiveTimeout = Duration(seconds: 30);
-
-  // Pagination
-  static const int defaultPageSize = 20;
-  static const int postsPageSize = 10;
-  static const int commentsPageSize = 20;
-  static const int messagesPageSize = 50;
-
-  // Storage Keys
+  // Storage Keys (환경과 무관한 상수)
   static const String accessTokenKey = 'access_token';
   static const String refreshTokenKey = 'refresh_token';
   static const String userDataKey = 'user_data';
-
-  // Feature Flags
-  static const bool isDevelopment = true;
-  static const bool enableLogging = true;
 }

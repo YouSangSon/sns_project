@@ -1,0 +1,50 @@
+# 개발 환경 설정
+environment: development
+
+# API Configuration
+api:
+  base_url: http://localhost:8080
+  connection_timeout: 30
+  receive_timeout: 30
+  enable_logging: true
+
+# Database (Supabase)
+supabase:
+  url: http://localhost:54321
+  anon_key: your-supabase-anon-key-here
+  service_role_key: your-supabase-service-role-key-here
+
+# Feature Flags
+features:
+  enable_analytics: false
+  enable_crash_reporting: false
+  enable_debug_menu: true
+  enable_mock_data: true
+
+# Pagination
+pagination:
+  default_page_size: 20
+  posts_page_size: 10
+  comments_page_size: 20
+  messages_page_size: 50
+
+# Storage
+storage:
+  max_image_size_mb: 10
+  allowed_image_types:
+    - jpg
+    - jpeg
+    - png
+    - gif
+    - webp
+
+# Cache
+cache:
+  image_cache_duration_days: 7
+  api_cache_duration_minutes: 5
+
+# App Settings
+app:
+  name: SNS App (Dev)
+  version: 1.0.0
+  support_email: dev@yoursns.com

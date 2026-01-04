@@ -1,6 +1,5 @@
-class ApiEndpoints {
-  ApiEndpoints._();
-
+/// API 엔드포인트 정의
+abstract class ApiEndpoints {
   // Auth
   static const String login = '/auth/login';
   static const String register = '/auth/register';
@@ -12,7 +11,7 @@ class ApiEndpoints {
   static String user(String id) => '/users/$id';
   static String userProfile(String id) => '/users/$id/profile';
   static String userPosts(String id) => '/users/$id/posts';
-  static String searchUsers = '/users/search';
+  static const String searchUsers = '/users/search';
   static String follow(String id) => '/users/$id/follow';
   static String unfollow(String id) => '/users/$id/unfollow';
 
@@ -38,7 +37,6 @@ class ApiEndpoints {
 
   // Notifications
   static const String notifications = '/notifications';
-  static String notification(String id) => '/notifications/$id';
   static String markNotificationRead(String id) => '/notifications/$id/read';
   static const String markAllNotificationsRead = '/notifications/read-all';
 
@@ -47,16 +45,8 @@ class ApiEndpoints {
   static String portfolio(String id) => '/portfolios/$id';
   static String portfolioHoldings(String id) => '/portfolios/$id/holdings';
 
-  // Bookmarks
-  static const String bookmarks = '/bookmarks';
-  static String bookmark(String postId) => '/bookmarks/$postId';
-
   // Stories
   static const String stories = '/stories';
   static String story(String id) => '/stories/$id';
   static String userStories(String userId) => '/stories/user/$userId';
-
-  // Reels
-  static const String reels = '/reels';
-  static String reel(String id) => '/reels/$id';
 }

@@ -1,14 +1,14 @@
-class AppConfig {
-  AppConfig._();
+/// 앱 설정 상수
+abstract class AppConfig {
+  // App Info
+  static const String appName = 'SNS App';
+  static const String appVersion = '1.0.0';
 
   // API Configuration
   static const String baseUrl = 'http://localhost:8080';
   static const String prodBaseUrl = 'https://api.yoursns.com';
-  static const Duration timeout = Duration(seconds: 30);
-
-  // App Configuration
-  static const String appName = 'SNS App';
-  static const String version = '1.0.0';
+  static const Duration connectionTimeout = Duration(seconds: 30);
+  static const Duration receiveTimeout = Duration(seconds: 30);
 
   // Pagination
   static const int defaultPageSize = 20;
@@ -17,10 +17,11 @@ class AppConfig {
   static const int messagesPageSize = 50;
 
   // Storage Keys
-  static const String authTokenKey = 'auth_token';
+  static const String accessTokenKey = 'access_token';
   static const String refreshTokenKey = 'refresh_token';
   static const String userDataKey = 'user_data';
 
-  // Dev Mode
-  static const bool isDev = true;
+  // Feature Flags
+  static const bool isDevelopment = true;
+  static const bool enableLogging = true;
 }

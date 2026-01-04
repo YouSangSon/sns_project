@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'core/theme/app_theme.dart';
-import 'core/services/router_service.dart';
+
+import 'app.dart';
+import 'core/network/dio_client.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,6 +22,9 @@ void main() async {
     ),
   );
 
+  // Initialize services
+  await _initializeServices();
+
   runApp(
     const ProviderScope(
       child: SNSApp(),
@@ -28,20 +32,9 @@ void main() async {
   );
 }
 
-class SNSApp extends ConsumerWidget {
-  const SNSApp({super.key});
+Future<void> _initializeServices() async {
+  // Initialize Dio client
+  DioClient.instance.init();
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final router = ref.watch(routerProvider);
-
-    return MaterialApp.router(
-      title: 'SNS App',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
-      routerConfig: router,
-    );
-  }
+  // Add other initializations here (Firebase, etc.)
 }

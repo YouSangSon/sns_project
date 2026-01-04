@@ -39,4 +39,34 @@ abstract class AppColors {
   // Message Bubbles
   static const Color myMessage = Color(0xFF0095F6);
   static const Color otherMessage = Color(0xFFEFEFEF);
+
+  // Gradients
+  static const LinearGradient primaryGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Color(0xFF667EEA),
+      Color(0xFF764BA2),
+    ],
+  );
+
+  static const LinearGradient instagramGradient = LinearGradient(
+    begin: Alignment.bottomLeft,
+    end: Alignment.topRight,
+    colors: [
+      Color(0xFFFCAF45),
+      Color(0xFFFF543E),
+      Color(0xFFC837AB),
+      Color(0xFF405DE6),
+    ],
+  );
+
+  static const LinearGradient storyGradient = LinearGradient(
+    begin: Alignment.bottomLeft,
+    end: Alignment.topRight,
+    colors: [
+      Color(0xFFDE0046),
+      Color(0xFFF7A34B),
+    ],
+  );
 }

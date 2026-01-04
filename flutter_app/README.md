@@ -1,6 +1,7 @@
 # SNS Flutter App
 
-Flutter와 Clean Architecture로 구현한 소셜 네트워크 서비스 모바일 앱입니다.
+Flutter와 Clean Architecture로 구현한 소셜 네트워크 서비스 앱입니다.
+**모바일(iOS/Android)과 웹을 단일 코드베이스로 지원합니다.**
 
 ## 🏗️ 아키텍처
 
@@ -12,6 +13,7 @@ lib/
 │   ├── constants/                  # 상수 (색상, 설정, API 엔드포인트)
 │   ├── errors/                     # 에러 처리 (Failure, Exception)
 │   ├── network/                    # 네트워크 (Dio, Router, Interceptors)
+│   ├── responsive/                 # 반응형 유틸리티 (웹/태블릿/모바일)
 │   └── utils/                      # 유틸리티 (Extensions, Validators)
 │
 ├── features/                       # Feature 모듈 (Feature-first)
@@ -25,9 +27,14 @@ lib/
 │   ├── investment/                 # 투자 포트폴리오
 │   └── stories/                    # 스토리
 │
-└── shared/                         # 공유 모듈
-    ├── providers/                  # DI Providers (Riverpod)
-    └── widgets/                    # 공통 위젯
+├── shared/                         # 공유 모듈
+│   ├── providers/                  # DI Providers (Riverpod)
+│   └── widgets/                    # 공통 위젯
+│       └── web/                    # 웹 전용 위젯
+│
+└── web/                            # Flutter 웹 설정
+    ├── index.html
+    └── manifest.json
 ```
 
 ### Feature 모듈 구조 (Clean Architecture)
@@ -58,6 +65,7 @@ feature/
 |---------|-----|
 | **Framework** | Flutter 3.x |
 | **Language** | Dart 3.x |
+| **Platforms** | iOS, Android, Web |
 | **State Management** | Riverpod + riverpod_annotation |
 | **Navigation** | Go Router |
 | **HTTP Client** | Dio |
@@ -107,6 +115,54 @@ dev_dependencies:
 - **보유 종목**: 추가/수정/삭제
 - **자산 검색**: 주식/ETF/암호화폐
 
+## 🎨 반응형 디자인
+
+단일 코드베이스로 모바일/태블릿/데스크톱 지원
+
+### 브레이크포인트
+
+| 디바이스 | 너비 | 레이아웃 |
+|---------|-----|---------|
+| 모바일 | 0 - 599px | 하단 네비게이션 |
+| 태블릿 | 600 - 1023px | 축소된 사이드바 (아이콘만) |
+| 데스크톱 | 1024 - 1439px | 확장된 사이드바 |
+| 대형 데스크톱 | 1440px+ | 사이드바 + 우측 패널 |
+
+### ResponsiveBuilder 사용
+
+```dart
+import 'core/responsive/responsive.dart';
+
+ResponsiveBuilder(
+  mobile: MobileLayout(),
+  tablet: TabletLayout(),
+  desktop: DesktopLayout(),
+)
+```
+
+### Context Extensions
+
+```dart
+// 디바이스 타입 확인
+if (context.isMobile) { ... }
+if (context.isTablet) { ... }
+if (context.isDesktop) { ... }
+
+// 반응형 값 선택
+final padding = context.responsive<double>(
+  mobile: 16,
+  tablet: 24,
+  desktop: 32,
+);
+```
+
+### AdaptiveNavigationShell
+
+플랫폼에 따라 자동으로 네비게이션 레이아웃 전환:
+- **모바일**: 하단 네비게이션 바
+- **태블릿**: 축소된 사이드바 (아이콘만)
+- **데스크톱**: 확장된 사이드바 + 우측 추천 패널
+
 ## 🔧 설치 및 실행
 
 ### 1. Flutter 설치
@@ -128,18 +184,24 @@ flutter pub run build_runner build --delete-conflicting-outputs
 
 ### 3. 앱 실행
 ```bash
+# 웹 (Chrome)
+flutter run -d chrome
+
 # iOS
 flutter run -d ios
 
 # Android
 flutter run -d android
 
-# 웹 (개발용)
-flutter run -d chrome
+# 디바이스 목록 확인
+flutter devices
 ```
 
 ### 4. 빌드
 ```bash
+# 웹 빌드
+flutter build web --release
+
 # Android APK
 flutter build apk --release
 
@@ -352,6 +414,7 @@ flutter pub run build_runner watch
 - **색상**: Instagram 스타일 (Primary Blue, Gradient)
 - **타이포그래피**: Material 3 Text Theme
 - **아이콘**: Material Icons
+- **반응형**: 모바일/태블릿/데스크톱 적응형 레이아웃
 
 ## 📄 라이선스
 

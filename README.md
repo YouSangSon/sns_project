@@ -1,22 +1,22 @@
 # SNS App - Modern Social Media Platform
 
-React Native와 Next.js로 구현한 **풀스택 소셜 네트워크 서비스** 애플리케이션입니다.
+**풀스택 소셜 네트워크 서비스** 애플리케이션입니다.
 
 ## 🏗️ 아키텍처
 
-- **Mobile**: React Native (Expo) + TypeScript
+- **Mobile**: Flutter (Clean Architecture) + Dart
 - **Web**: Next.js 14 (App Router) + TypeScript
 - **Backend**:
   - ⭐ **Supabase** (PostgreSQL + Auth + Storage) - 추천
   - Kotlin + Spring Boot 3 REST API ([YouSangSon/rest_server](https://github.com/YouSangSon/rest_server))
-- **State Management**: React Query (@tanstack/react-query) + Zustand
-- **Shared Layer**: TypeScript types, API services, constants
+- **Mobile State Management**: Riverpod + dartz (Either)
+- **Web State Management**: React Query (@tanstack/react-query) + Zustand
 
 ## 🌐 지원 플랫폼
 
 - ✅ **Web** (Chrome, Safari, Edge, Firefox) - Next.js
-- ✅ **Android** (API 21+) - React Native
-- ✅ **iOS** (iOS 13.0+) - React Native
+- ✅ **Android** (API 21+) - Flutter
+- ✅ **iOS** (iOS 12.0+) - Flutter
 - ✅ **반응형 디자인** (모바일, 태블릿, 데스크톱)
 
 ## 📱 주요 기능
@@ -166,15 +166,16 @@ React Native와 Next.js로 구현한 **풀스택 소셜 네트워크 서비스**
 
 ## 🛠 기술 스택
 
-### Frontend (Mobile)
-- **React Native** - Expo SDK 50+
-- **TypeScript** - 타입 안전성
-- **React Navigation** - Stack & Bottom Tabs
-- **React Query** - Server state management
-- **Zustand** - Client state management (with persistence)
-- **Axios** - HTTP client
-- **Expo Image Picker** - 이미지/비디오 선택
-- **AsyncStorage** - 로컬 저장소
+### Frontend (Mobile - Flutter)
+- **Flutter 3.x** - 크로스 플랫폼 프레임워크
+- **Dart 3.x** - 프로그래밍 언어
+- **Clean Architecture** - Feature-first 구조
+- **Riverpod** - 상태 관리 + DI
+- **Go Router** - 네비게이션
+- **Dio** - HTTP 클라이언트
+- **freezed + json_serializable** - 코드 생성
+- **dartz** - 함수형 에러 처리 (Either)
+- **flutter_secure_storage** - 보안 저장소
 
 ### Frontend (Web)
 - **Next.js 14** - App Router
@@ -184,11 +185,6 @@ React Native와 Next.js로 구현한 **풀스택 소셜 네트워크 서비스**
 - **Zustand** - Client state management
 - **Axios** - HTTP client
 
-### Shared Layer
-- **TypeScript** - 공통 타입 정의
-- **Axios Interceptors** - JWT 인증, 에러 핸들링
-- **API Services** - 재사용 가능한 API 클라이언트
-
 ### Backend
 - **Kotlin** - 프로그래밍 언어
 - **Spring Boot 3** - REST API 프레임워크
@@ -196,124 +192,71 @@ React Native와 Next.js로 구현한 **풀스택 소셜 네트워크 서비스**
 - **JWT** - 인증 토큰
 - **REST API** - RESTful 아키텍처
 
-### 주요 패키지
+### 주요 패키지 (Flutter)
 
-```json
-{
-  "dependencies": {
-    // React & React Native
-    "react": "18.2.0",
-    "react-native": "0.73.x",
-    "expo": "~50.0.x",
+```yaml
+dependencies:
+  flutter_riverpod: ^2.4.9
+  riverpod_annotation: ^2.3.3
+  go_router: ^13.1.0
+  dio: ^5.4.0
+  freezed_annotation: ^2.4.1
+  json_annotation: ^4.8.1
+  dartz: ^0.10.1
+  flutter_secure_storage: ^9.0.0
+  cached_network_image: ^3.3.1
+  image_picker: ^1.0.7
 
-    // State Management
-    "@tanstack/react-query": "^5.x",
-    "zustand": "^4.x",
-
-    // Navigation
-    "@react-navigation/native": "^6.x",
-    "@react-navigation/native-stack": "^6.x",
-    "@react-navigation/bottom-tabs": "^6.x",
-
-    // HTTP Client
-    "axios": "^1.x",
-
-    // UI Components
-    "@expo/vector-icons": "^14.x",
-    "expo-image-picker": "~14.x",
-
-    // Storage
-    "@react-native-async-storage/async-storage": "1.21.x",
-
-    // Next.js (Web)
-    "next": "14.x",
-    "tailwindcss": "^3.x"
-  }
-}
+dev_dependencies:
+  freezed: ^2.4.6
+  json_serializable: ^6.7.1
+  riverpod_generator: ^2.3.9
+  build_runner: ^2.4.8
 ```
 
 ## 📁 프로젝트 구조
 
 ```
 sns_project/
-├── mobile/                          # React Native 앱
-│   ├── src/
-│   │   ├── screens/                 # 화면 컴포넌트
-│   │   │   ├── auth/               # 인증 화면
-│   │   │   ├── feed/               # 피드 화면
-│   │   │   ├── post/               # 게시물 화면
-│   │   │   ├── profile/            # 프로필 화면
-│   │   │   ├── search/             # 검색 화면
-│   │   │   ├── messages/           # 메시지 화면
-│   │   │   ├── notifications/      # 알림 화면
-│   │   │   ├── stories/            # 스토리 화면
-│   │   │   ├── reels/              # 릴스 화면
-│   │   │   └── bookmarks/          # 북마크 화면
-│   │   ├── navigation/              # 네비게이션 설정
-│   │   │   ├── RootNavigator.tsx   # 루트 네비게이터
-│   │   │   ├── MainTabs.tsx        # 메인 탭 네비게이터
-│   │   │   └── types.ts            # 네비게이션 타입
-│   │   ├── hooks/                   # Custom React Hooks
-│   │   │   ├── usePosts.ts         # 게시물 hooks
-│   │   │   ├── useUsers.ts         # 사용자 hooks
-│   │   │   ├── useMessages.ts      # 메시지 hooks
-│   │   │   ├── useStories.ts       # 스토리 hooks
-│   │   │   ├── useReels.ts         # 릴스 hooks
-│   │   │   ├── usePortfolios.ts    # 포트폴리오 hooks
-│   │   │   └── useInvestment.ts    # 투자 hooks
-│   │   ├── stores/                  # Zustand stores
-│   │   │   └── authStore.ts        # 인증 상태
-│   │   ├── constants/               # 상수
-│   │   └── utils/                   # 유틸리티 함수
-│   ├── App.tsx                      # 앱 진입점
-│   └── package.json
+├── flutter_app/                     # Flutter 모바일 앱 (Clean Architecture)
+│   └── lib/
+│       ├── core/                    # 핵심 공통 모듈
+│       │   ├── constants/           # 상수 (색상, 설정, API)
+│       │   ├── errors/              # Failure, Exception
+│       │   ├── network/             # Dio, Router, Interceptors
+│       │   └── utils/               # Extensions, Validators
+│       │
+│       ├── features/                # Feature 모듈
+│       │   ├── auth/                # 인증
+│       │   │   ├── domain/          # entities, repositories, usecases
+│       │   │   ├── data/            # datasources, models, repositories impl
+│       │   │   └── presentation/    # providers, pages, widgets
+│       │   ├── feed/                # 피드
+│       │   ├── post/                # 게시물
+│       │   ├── profile/             # 프로필
+│       │   ├── messages/            # 메시지
+│       │   ├── search/              # 검색
+│       │   ├── notifications/       # 알림
+│       │   ├── investment/          # 투자
+│       │   └── stories/             # 스토리
+│       │
+│       └── shared/                  # 공유 모듈
+│           ├── providers/           # DI Providers
+│           └── widgets/             # 공통 위젯
+│
+├── mobile/                          # React Native 앱 (레거시)
 │
 ├── web-app/                         # Next.js 웹 앱
 │   ├── app/                         # App Router
-│   │   ├── auth/                   # 인증 페이지
-│   │   ├── feed/                   # 피드 페이지
-│   │   ├── posts/                  # 게시물 페이지
-│   │   ├── profile/                # 프로필 페이지
-│   │   ├── messages/               # 메시지 페이지
-│   │   ├── notifications/          # 알림 페이지
-│   │   ├── stories/                # 스토리 페이지
-│   │   ├── reels/                  # 릴스 페이지
-│   │   └── bookmarks/              # 북마크 페이지
 │   ├── lib/
-│   │   ├── hooks/                  # Custom React Hooks (모바일과 동일)
-│   │   └── stores/                 # Zustand stores
-│   ├── components/                  # 재사용 컴포넌트
-│   └── package.json
+│   │   ├── hooks/                   # Custom React Hooks
+│   │   └── stores/                  # Zustand stores
+│   └── components/                  # 재사용 컴포넌트
 │
-└── shared/                          # 공유 레이어
+└── shared/                          # 웹 공유 레이어
     ├── api/                         # API 서비스 클래스
-    │   ├── client.ts               # Axios 클라이언트 (Interceptors)
-    │   ├── auth.service.ts         # 인증 API
-    │   ├── users.service.ts        # 사용자 API
-    │   ├── posts.service.ts        # 게시물 API
-    │   ├── comments.service.ts     # 댓글 API
-    │   ├── messages.service.ts     # 메시지 API
-    │   ├── stories.service.ts      # 스토리 API
-    │   ├── reels.service.ts        # 릴스 API
-    │   ├── notifications.service.ts # 알림 API
-    │   ├── bookmarks.service.ts    # 북마크 API
-    │   ├── portfolios.service.ts   # 포트폴리오 API
-    │   ├── trades.service.ts       # 거래 API
-    │   ├── watchlist.service.ts    # 관심종목 API
-    │   └── investmentPosts.service.ts # 투자 포스트 API
     ├── types/                       # TypeScript 타입 정의
-    │   ├── user.ts                 # 사용자 타입
-    │   ├── post.ts                 # 게시물 타입
-    │   ├── comment.ts              # 댓글 타입
-    │   ├── message.ts              # 메시지 타입
-    │   ├── story.ts                # 스토리 타입
-    │   ├── reel.ts                 # 릴스 타입
-    │   ├── notification.ts         # 알림 타입
-    │   ├── bookmark.ts             # 북마크 타입
-    │   ├── investment.ts           # 투자 타입
-    │   └── index.ts                # 타입 export
-    └── constants/
-        └── api.ts                  # API 엔드포인트 상수
+    └── constants/                   # 상수
 ```
 
 ## 🚀 시작하기
@@ -337,13 +280,13 @@ cd sns_project
 
 ### 2. 패키지 설치
 
-#### Mobile (React Native)
+#### Mobile (Flutter)
 ```bash
-cd mobile
-npm install
+cd flutter_app
+flutter pub get
 
-# Supabase 사용 시
-npm install @supabase/supabase-js
+# 코드 생성 (freezed, json_serializable)
+flutter pub run build_runner build --delete-conflicting-outputs
 ```
 
 #### Web (Next.js)
@@ -447,18 +390,18 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
 
 ### 6. 앱 실행
 
-#### Mobile (React Native)
+#### Mobile (Flutter)
 ```bash
-cd mobile
+cd flutter_app
 
 # iOS 시뮬레이터 (macOS only)
-npm run ios
+flutter run -d ios
 
 # Android 에뮬레이터
-npm run android
+flutter run -d android
 
-# Expo Go 앱으로 실행
-npm start
+# 웹 (개발용)
+flutter run -d chrome
 ```
 
 #### Web (Next.js)
@@ -471,18 +414,18 @@ npm run dev
 
 ### 7. 빌드
 
-#### Mobile
+#### Mobile (Flutter)
 ```bash
-cd mobile
+cd flutter_app
 
-# Development build
-npx expo prebuild
-npx expo run:ios
-npx expo run:android
+# Android APK
+flutter build apk --release
 
-# Production build
-eas build --platform ios
-eas build --platform android
+# Android App Bundle
+flutter build appbundle --release
+
+# iOS (macOS 필요)
+flutter build ios --release
 ```
 
 #### Web

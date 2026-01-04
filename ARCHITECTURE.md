@@ -6,23 +6,16 @@
 ┌─────────────────────────────────────────────────────────────┐
 │                        Client Layer                          │
 ├──────────────────────────┬──────────────────────────────────┤
-│   React Native (Mobile)  │      Next.js 14 (Web)            │
+│   Flutter (Mobile)       │      Next.js 14 (Web)            │
 │   ├── iOS                │      ├── SSR/CSR                 │
-│   └── Android            │      └── Responsive Design       │
+│   ├── Android            │      └── Responsive Design       │
+│   └── Clean Architecture │                                  │
 └──────────────────────────┴──────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    Shared Layer (TypeScript)                 │
-│   ├── API Services (Axios)                                  │
-│   ├── Type Definitions                                      │
-│   └── Constants                                             │
-└─────────────────────────────────────────────────────────────┘
                            │
                            ▼ HTTP/REST
 ┌─────────────────────────────────────────────────────────────┐
 │                  Backend API Server                          │
-│   Kotlin + Spring Boot 3                                    │
+│   Kotlin + Spring Boot 3  /  Supabase                       │
 │   ├── REST API Endpoints                                    │
 │   ├── JWT Authentication                                    │
 │   └── PostgreSQL Database                                   │
@@ -31,56 +24,101 @@
 
 ## 🎯 설계 원칙
 
-### 1. **코드 재사용성** (Code Reusability)
-- **Shared Layer**: 타입, API 서비스, 상수를 공유
-- **DRY Principle**: 중복 코드 최소화
-- **Cross-platform**: 하나의 타입 정의로 Mobile & Web 지원
+### 1. **Clean Architecture** (Mobile - Flutter)
+- **Domain Layer**: 순수 비즈니스 로직 (Flutter 의존성 없음)
+- **Data Layer**: 외부 데이터 소스 접근
+- **Presentation Layer**: UI 및 상태 관리
+- **Dependency Rule**: 안쪽 레이어는 바깥쪽을 모름
 
 ### 2. **타입 안전성** (Type Safety)
-- **TypeScript Strict Mode**: 컴파일 타임에 에러 검출
-- **End-to-End Type Safety**: Frontend ↔ Backend 타입 일치
-- **No `any`**: 모든 타입 명시
+- **Flutter**: Dart strong typing + freezed 코드 생성
+- **Web**: TypeScript Strict Mode
+- **Null Safety**: Dart null safety, TypeScript strictNullChecks
 
 ### 3. **관심사의 분리** (Separation of Concerns)
-- **Presentation Layer**: 화면 컴포넌트
-- **Business Logic Layer**: Custom Hooks
-- **Data Layer**: API Services
-- **State Management**: React Query + Zustand
+- **Mobile (Flutter)**:
+  - Entities: 핵심 비즈니스 객체
+  - UseCases: 비즈니스 로직 캡슐화
+  - Repositories: 데이터 접근 추상화
+  - Providers: 상태 관리 (Riverpod)
+- **Web (Next.js)**:
+  - React Query: 서버 상태 관리
+  - Zustand: 클라이언트 상태 관리
 
 ### 4. **확장성** (Scalability)
-- **Modular Architecture**: 기능별 모듈화
+- **Feature-first**: 기능별 모듈화
+- **DI (Dependency Injection)**: Riverpod으로 의존성 주입
 - **Easy to Add Features**: 일관된 패턴
-- **Plugin System**: 서비스 클래스 확장 가능
 
 ## 📂 레이어별 상세 설명
 
 ### 1. Client Layer
 
-#### React Native (Mobile)
+#### Flutter (Mobile) - Clean Architecture
 
 **기술 스택:**
-- React Native (Expo)
-- React Navigation
-- React Query
-- Zustand
-- TypeScript
+- Flutter 3.x + Dart 3.x
+- Riverpod (상태 관리 + DI)
+- Go Router (네비게이션)
+- Dio (HTTP 클라이언트)
+- freezed + json_serializable (코드 생성)
+- dartz (함수형 에러 처리)
 
 **디렉토리 구조:**
 ```
-mobile/src/
-├── screens/          # 화면 컴포넌트
-├── navigation/       # 네비게이션 설정
-├── hooks/            # Custom React Query Hooks
-├── stores/           # Zustand stores
-├── components/       # 재사용 컴포넌트
-└── constants/        # 앱 상수
+flutter_app/lib/
+├── core/                    # 핵심 공통 모듈
+│   ├── constants/           # AppColors, AppConfig, ApiEndpoints
+│   ├── errors/              # Failure (freezed), Exceptions
+│   ├── network/             # DioClient, AppRouter, Interceptors
+│   └── utils/               # Extensions, Validators
+│
+├── features/                # Feature 모듈 (Feature-first)
+│   └── {feature}/
+│       ├── domain/          # 비즈니스 로직 (순수 Dart)
+│       │   ├── entities/    # Entity 클래스 (freezed)
+│       │   ├── repositories/# Repository 인터페이스
+│       │   └── usecases/    # UseCase 클래스
+│       ├── data/            # 데이터 접근
+│       │   ├── datasources/ # Remote/Local DataSource
+│       │   ├── models/      # DTO (freezed + json_serializable)
+│       │   └── repositories/# Repository 구현체
+│       └── presentation/    # UI
+│           ├── providers/   # Riverpod StateNotifier
+│           ├── pages/       # 화면
+│           └── widgets/     # 위젯
+│
+└── shared/                  # 공유 모듈
+    ├── providers/           # DI Providers
+    └── widgets/             # 공통 위젯
 ```
 
-**특징:**
-- Bottom Tab + Stack Navigation
-- Native 컴포넌트 사용
-- AsyncStorage를 통한 영구 저장
-- Push notification 지원 준비
+**Clean Architecture 레이어:**
+
+```
+┌────────────────────────────────────────────────────────────┐
+│                    Presentation Layer                       │
+│   ┌────────────┐    ┌────────────┐    ┌────────────┐      │
+│   │   Pages    │ ←  │  Providers │ ←  │   Widgets  │      │
+│   └────────────┘    └─────┬──────┘    └────────────┘      │
+└───────────────────────────┼────────────────────────────────┘
+                            │ depends on
+┌───────────────────────────▼────────────────────────────────┐
+│                      Domain Layer                           │
+│   ┌────────────┐    ┌────────────┐    ┌────────────┐      │
+│   │  UseCases  │ →  │Repositories│ ←  │  Entities  │      │
+│   │            │    │ (interface)│    │            │      │
+│   └────────────┘    └─────┬──────┘    └────────────┘      │
+└───────────────────────────┼────────────────────────────────┘
+                            │ implements
+┌───────────────────────────▼────────────────────────────────┐
+│                       Data Layer                            │
+│   ┌────────────┐    ┌────────────┐    ┌────────────┐      │
+│   │DataSources │ →  │Repositories│ →  │   Models   │      │
+│   │            │    │   (impl)   │    │   (DTO)    │      │
+│   └────────────┘    └────────────┘    └────────────┘      │
+└────────────────────────────────────────────────────────────┘
+```
 
 #### Next.js 14 (Web)
 
@@ -102,90 +140,150 @@ web-app/
 └── public/           # 정적 파일
 ```
 
-**특징:**
-- Server-Side Rendering (SSR)
-- File-based Routing
-- Image Optimization
-- SEO 최적화
+### 2. Flutter Clean Architecture 상세
 
-### 2. Shared Layer
+#### Domain Layer (비즈니스 로직)
 
-#### API Services
+**순수 Dart로 작성 - Flutter 의존성 없음**
 
-**구조:**
-```typescript
-// shared/api/posts.service.ts
-export class PostsService {
-  async getFeed(params?: PaginationParams): Promise<PaginatedResponse<Post>> {
-    return apiClient.get<PaginatedResponse<Post>>(
-      API_ENDPOINTS.POSTS.FEED,
-      { params }
+```dart
+// Entity (freezed)
+@freezed
+class UserEntity with _$UserEntity {
+  const factory UserEntity({
+    required String id,
+    required String email,
+    required String username,
+  }) = _UserEntity;
+}
+
+// Repository Interface
+abstract class AuthRepository {
+  Future<Either<Failure, (UserEntity, AuthTokens)>> login({
+    required String email,
+    required String password,
+  });
+}
+
+// UseCase
+class LoginUseCase {
+  final AuthRepository _repository;
+
+  LoginUseCase(this._repository);
+
+  Future<Either<Failure, (UserEntity, AuthTokens)>> call({
+    required String email,
+    required String password,
+  }) => _repository.login(email: email, password: password);
+}
+```
+
+#### Data Layer (데이터 접근)
+
+**DTO 변환 및 외부 데이터 소스 접근**
+
+```dart
+// Model (DTO)
+@freezed
+class UserModel with _$UserModel {
+  const UserModel._();
+
+  const factory UserModel({
+    required String id,
+    required String email,
+    @JsonKey(name: 'user_name') required String username,
+  }) = _UserModel;
+
+  factory UserModel.fromJson(Map<String, dynamic> json) =>
+      _$UserModelFromJson(json);
+
+  // Entity 변환
+  UserEntity toEntity() => UserEntity(
+    id: id,
+    email: email,
+    username: username,
+  );
+}
+
+// Repository Implementation
+class AuthRepositoryImpl implements AuthRepository {
+  final AuthRemoteDataSource _remoteDataSource;
+  final AuthLocalDataSource _localDataSource;
+
+  @override
+  Future<Either<Failure, (UserEntity, AuthTokens)>> login({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final response = await _remoteDataSource.login(
+        email: email,
+        password: password,
+      );
+      await _localDataSource.saveTokens(
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
+      );
+      return Right((response.user.toEntity(), tokens));
+    } on ServerException catch (e) {
+      return Left(Failure.server(message: e.message));
+    } on NetworkException {
+      return Left(const Failure.network());
+    }
+  }
+}
+```
+
+#### Presentation Layer (UI)
+
+**Riverpod으로 상태 관리**
+
+```dart
+// State (freezed)
+@freezed
+class AuthState with _$AuthState {
+  const factory AuthState.initial() = _Initial;
+  const factory AuthState.loading() = _Loading;
+  const factory AuthState.authenticated(UserEntity user) = _Authenticated;
+  const factory AuthState.error(String message) = _Error;
+}
+
+// Provider
+class AuthNotifier extends StateNotifier<AuthState> {
+  final LoginUseCase _loginUseCase;
+
+  AuthNotifier({required LoginUseCase loginUseCase})
+      : _loginUseCase = loginUseCase,
+        super(const AuthState.initial());
+
+  Future<void> login({
+    required String email,
+    required String password,
+  }) async {
+    state = const AuthState.loading();
+
+    final result = await _loginUseCase(email: email, password: password);
+
+    result.fold(
+      (failure) => state = AuthState.error(failure.errorMessage),
+      (data) => state = AuthState.authenticated(data.$1),
     );
   }
-
-  async createPost(data: CreatePostDto): Promise<Post> {
-    return apiClient.post<Post>(API_ENDPOINTS.POSTS.BASE, data);
-  }
 }
 
-export const postsService = new PostsService();
-```
+// Page
+class LoginPage extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authNotifierProvider);
 
-**Axios Interceptors:**
-```typescript
-// shared/api/client.ts
-apiClient.interceptors.request.use((config) => {
-  // Add JWT token
-  const token = getToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    return authState.when(
+      initial: () => _buildLoginForm(),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      authenticated: (user) => const FeedPage(),
+      error: (message) => _buildLoginForm(error: message),
+    );
   }
-  return config;
-});
-
-apiClient.interceptors.response.use(
-  (response) => response.data,
-  async (error) => {
-    // Auto refresh token on 401
-    if (error.response?.status === 401) {
-      await refreshToken();
-      return apiClient.request(error.config);
-    }
-    return Promise.reject(error);
-  }
-);
-```
-
-#### Type Definitions
-
-**타입 계층:**
-```
-types/
-├── user.ts           # User, CreateUserDto, UpdateUserDto
-├── post.ts           # Post, CreatePostDto, UpdatePostDto
-├── comment.ts        # Comment, CreateCommentDto
-├── message.ts        # Message, Conversation
-├── story.ts          # Story, CreateStoryDto
-├── reel.ts           # Reel, CreateReelDto
-├── notification.ts   # Notification
-├── bookmark.ts       # Bookmark
-├── investment.ts     # Portfolio, Holding, Trade, WatchlistItem
-└── index.ts          # PaginationParams, PaginatedResponse
-```
-
-**공통 타입:**
-```typescript
-export interface PaginationParams {
-  page?: number;
-  limit?: number;
-  cursor?: string;
-}
-
-export interface PaginatedResponse<T> {
-  data: T[];
-  hasMore: boolean;
-  nextCursor?: string;
-  total?: number;
 }
 ```
 
